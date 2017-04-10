@@ -3,13 +3,14 @@ import java.net.BindException;
 import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
-import javax.swing.*;
-import java.awt.*;
+import java.util.*;
 
 /**
  * Created by Quinn on 4/7/2017.
  */
 public class H7Server{
+
+    public ArrayList<Socket> clients = new ArrayList<Socket>();
 
     public static void main(String[] args){new H7Server();}
     public H7Server()
@@ -28,6 +29,7 @@ public class H7Server{
             while(true){ 		// run forever once up
                 //try{
                 cs = ss.accept(); 				// wait for connection
+                clients.add(cs);
                 ThreadServer ths = new ThreadServer( cs );
                 ths.start();
             } // end while
@@ -52,20 +54,18 @@ public class H7Server{
         public void run() {
 
                BufferedReader br;
-               PrintWriter opw;
                String clientMsg;
                try {
                    br = new BufferedReader(
                            new InputStreamReader(
                                    cs.getInputStream()));
-                   opw = new PrintWriter(
-                           new OutputStreamWriter(
-                                   cs.getOutputStream()));
+
 
                    clientMsg = br.readLine();                // from client
                    System.out.println("Server read: " + clientMsg);
-                   opw.println(clientMsg);    //to client
-                   opw.flush();
+
+                   sendMessage(clientMsg);
+
                } catch (IOException e) {
                    System.out.println("Inside catch");
                    e.printStackTrace();
@@ -73,7 +73,25 @@ public class H7Server{
 
              
         }
+
+        public synchronized void sendMessage(String s){
+            try{
+                for(Socket sock: clients) {
+                    PrintWriter pw = new PrintWriter(new OutputStreamWriter(sock.getOutputStream()));
+
+                    pw.println(s);
+                    pw.flush();
+                }
+            }
+            catch(IOException e){
+                e.printStackTrace();
+            }
+
+
+        }
+
     } // end class ThreadServer
+
 
 
 }
