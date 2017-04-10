@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="WebServers">
+    <option name="servers">
+      <webServer id="adf25cd8-b97a-495f-9a2f-9b29466d9ecd" name="https://github.com/QuantonBiscuit/BattleShip-Game" url="https://github.com/QuantonBiscuit/BattleShip-Game">
+        <fileTransfer host="https://github.com/QuantonBiscuit/BattleShip-Game" port="21">
+          <advancedOptions>
+            <advancedOptions dataProtectionLevel="Private" />
+          </advancedOptions>
+          <option name="port" value="21" />
+        </fileTransfer>
+      </webServer>
+    </option>
+  </component>
+</project>
