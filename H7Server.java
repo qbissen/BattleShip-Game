@@ -10,21 +10,18 @@ import java.util.*;
  */
 public class H7Server{
 
-    public Vector<Socket> clients = new Vector<Socket>();
+    private Vector<Socket> clients = new Vector<Socket>();
 
     public static void main(String[] args){new H7Server();}
-    public H7Server()
-    {
+    public H7Server() {
 
-
-
-        ServerSocket ss = null;
+        ServerSocket ss;
 
         try {
             System.out.println("getLocalHost: "+ InetAddress.getLocalHost() );
             System.out.println("getByName:    "+InetAddress.getByName("localhost") );
 
-            Socket cs = null;
+            Socket cs;
             while(true){ 		// run forever once up
                 //try{
                 ss = new ServerSocket(16789);
@@ -47,8 +44,8 @@ public class H7Server{
     class ThreadServer extends Thread {
         Socket cs;
 
-        public ThreadServer( Socket cs ) {
-            this.cs = cs;
+        public ThreadServer( Socket _cs ) {
+            cs = _cs;
         }
 
         public void run() {
@@ -61,10 +58,10 @@ public class H7Server{
                                new InputStreamReader(
                                        cs.getInputStream()));
 
-
                        clientMsg = br.readLine();                // from client
-                       System.out.println("Server read: " + clientMsg);
+
                        while (clientMsg != null) {
+                           System.out.println("Server read: " + clientMsg);
                            sendMessage(clientMsg);
                        }
 

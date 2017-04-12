@@ -73,11 +73,12 @@ public class H7Client implements ActionListener {
 
     }
 
-    public void setClientComms(String message) {
+    public synchronized void setClientComms(String message) {
         try {
             // open communications to the server
             Socket s = new Socket(hostName, portNumber);
             SendThread ct = new SendThread(s, message);
+            ct.start();
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -106,13 +107,21 @@ public class H7Client implements ActionListener {
 
     class SendThread extends Thread {
 
-        public SendThread(Socket sock, String msg) {
+        Socket s;
+        String msg;
+
+        public SendThread(Socket sock, String _msg) {
+            s = sock;
+            msg = _msg;
+        }
+
+        public void run() {
             while (true) {
                 try {
 
                     // open output stream
                     PrintWriter pout = new PrintWriter(
-                            new OutputStreamWriter(sock.getOutputStream()));
+                            new OutputStreamWriter(s.getOutputStream()));
 
 
                     // write something to the server
@@ -121,57 +130,43 @@ public class H7Client implements ActionListener {
                     // make sure it went
                     pout.flush();
 
-                    // print the something to the user
-                    System.out.println("Message: " + msg);
-                    //jtaChat.setText("");
-                    jtaRecive.append("\n" + msg);
-
-
-                    // Send the terminating string to the server
-                    pout.println("quit");
-                    pout.flush();
-
-                    // close everything
-                    pout.close();
                 } catch (UnknownHostException uhe) {
                     System.out.println("What host you speak of?");
                 } catch (IOException ioe) {
                     System.out.println("Bad IO?");
                     ioe.printStackTrace();
                 }
-            }
-        }
 
-    }
-
-    public void actionPerformed(ActionEvent event) {
-        if (event.getActionCommand().equals("Exit")) {
-            System.exit(0);
-        } else if (event.getActionCommand().equals("Send")) {
-            String chatMessage = jtaChat.getText();
-            jtaChat.setText("");
-            setClientComms(chatMessage);
-
-
-        }
-        else if (event.getActionCommand().equals("Confirm Port and Host Info")) {
-            hostName = jtfHostName.getText();
-            //NEED TO ADD IN WAY TO HANDLE IP ADDRESSES
-            portNumber = Integer.parseInt(jtfPortName.getText());
-            try {
-                Socket s = new Socket(hostName, portNumber);
-                ReceiveThread rc = new ReceiveThread(s);
-            } catch (IOException e) {
-                e.printStackTrace();
             }
         }
     }
+        public void actionPerformed(ActionEvent event) {
+            if (event.getActionCommand().equals("Exit")) {
+                System.exit(0);
+            } else if (event.getActionCommand().equals("Send")) {
+                String chatMessage = jtaChat.getText();
+                jtaChat.setText("");
+                setClientComms(chatMessage);
 
 
-    public static void main(String[] args) {
+            } else if (event.getActionCommand().equals("Confirm Port and Host Info")) {
+                hostName = jtfHostName.getText();
+                //NEED TO ADD IN WAY TO HANDLE IP ADDRESSES
+                portNumber = Integer.parseInt(jtfPortName.getText());
+                try {
+                    Socket s = new Socket(hostName, portNumber);
+                    ReceiveThread rc = new ReceiveThread(s);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
 
-        new H7Client();
 
+        public static void main(String[] args) {
 
+            new H7Client();
+
+        }
     }
-}
+
