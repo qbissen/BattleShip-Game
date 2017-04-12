@@ -10,7 +10,7 @@ import java.util.*;
  */
 public class H7Server{
 
-    public ArrayList<Socket> clients = new ArrayList<Socket>();
+    public Vector<Socket> clients = new Vector<Socket>();
 
     public static void main(String[] args){new H7Server();}
     public H7Server()
@@ -24,15 +24,15 @@ public class H7Server{
             System.out.println("getLocalHost: "+ InetAddress.getLocalHost() );
             System.out.println("getByName:    "+InetAddress.getByName("localhost") );
 
-            ss = new ServerSocket(16789);
             Socket cs = null;
             while(true){ 		// run forever once up
                 //try{
+                ss = new ServerSocket(16789);
                 cs = ss.accept(); 				// wait for connection
                 clients.add(cs);
                 ThreadServer ths = new ThreadServer( cs );
                 ths.start();
-            } // end while
+           } // end while
         }
         catch( BindException be ) {
             System.out.println("Server already running on this computer, stopping.");
@@ -55,23 +55,25 @@ public class H7Server{
 
                BufferedReader br;
                String clientMsg;
-               try {
-                   br = new BufferedReader(
-                           new InputStreamReader(
-                                   cs.getInputStream()));
+               while(true) {
+                   try {
+                       br = new BufferedReader(
+                               new InputStreamReader(
+                                       cs.getInputStream()));
 
 
-                   clientMsg = br.readLine();                // from client
-                   System.out.println("Server read: " + clientMsg);
+                       clientMsg = br.readLine();                // from client
+                       System.out.println("Server read: " + clientMsg);
+                       while (clientMsg != null) {
+                           sendMessage(clientMsg);
+                       }
 
-                   sendMessage(clientMsg);
+                   } catch (IOException e) {
+                       System.out.println("Inside catch");
+                       e.printStackTrace();
+                   }
 
-               } catch (IOException e) {
-                   System.out.println("Inside catch");
-                   e.printStackTrace();
                }
-
-             
         }
 
         public synchronized void sendMessage(String s){
