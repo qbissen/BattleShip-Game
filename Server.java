@@ -1,6 +1,8 @@
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
+import javax.swing.BorderFactory;
+import javax.swing.border.Border;
 
 /**
  * Created by Jacob on 4/23/2017.
@@ -17,19 +19,25 @@ public class Server extends JFrame{
     private JTextField jtfPort = new JTextField(5);
 
     //JTextArea
-    private JTextArea jta = new JTextArea(50,40);
+    private JTextArea jta = new JTextArea(20,40);
 
     //JButton
     private JButton jbConnect = new JButton("Connect");
 
-    //JPanel
+    //JPanels
     private JPanel jpInput = new JPanel();
+    private JPanel jpButton = new JPanel();
+    private JPanel jpTextArea = new JPanel();
 
+    //Border for JTextArea
+    private Border border = BorderFactory.createLineBorder(Color.BLACK);
     public static void main(String[] args){
         new Server();
     }
 
     private Server(){
+        jta.setBorder(BorderFactory.createCompoundBorder(border,
+                BorderFactory.createEmptyBorder(10, 10, 10, 10)));
         jta.setEnabled(false);
 
         jpInput.add(jlIP);
@@ -37,15 +45,20 @@ public class Server extends JFrame{
         jpInput.add(jlPort);
         jpInput.add(jtfPort);
 
+        jpTextArea.add(jta);
+
+        jpButton.add(jbConnect);
+
         jlIP.setHorizontalAlignment(JLabel.RIGHT);
         jlPort.setHorizontalAlignment(JLabel.RIGHT);
 
         add(jpInput,BorderLayout.NORTH);
-        add(jta, BorderLayout.CENTER);
-        add(jbConnect, BorderLayout.SOUTH);
+        add(jpTextArea, BorderLayout.CENTER);
+        add(jpButton, BorderLayout.SOUTH);
 
         setLocationRelativeTo(null);
         setSize(500,500);
         setVisible(true);
+        setDefaultCloseOperation(EXIT_ON_CLOSE);
     }
 }
