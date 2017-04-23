@@ -9,8 +9,8 @@ import java.awt.event.*;
 public class Server extends JFrame{
 
     //JLabels
-    private JLabel jlIP = new JLabel("IP");
-    private JLabel jlPort = new JLabel("Port");
+    private JLabel jlIP = new JLabel("IP  ");
+    private JLabel jlPort = new JLabel("Port  ");
 
     //JTextFields
     private JTextField jtfIP = new JTextField(20);
@@ -23,20 +23,29 @@ public class Server extends JFrame{
     private JButton jbConnect = new JButton("Connect");
 
     //JPanel
-    private JPanel jpInput = new JPanel(new GridLayout(0,2));
+    private JPanel jpInput = new JPanel();
 
     public static void main(String[] args){
         new Server();
     }
 
     private Server(){
+        jta.setEnabled(false);
+
         jpInput.add(jlIP);
         jpInput.add(jtfIP);
         jpInput.add(jlPort);
         jpInput.add(jtfPort);
 
+        jlIP.setHorizontalAlignment(JLabel.RIGHT);
+        jlPort.setHorizontalAlignment(JLabel.RIGHT);
+
         add(jpInput,BorderLayout.NORTH);
         add(jta, BorderLayout.CENTER);
         add(jbConnect, BorderLayout.SOUTH);
+
+        setLocationRelativeTo(null);
+        setSize(500,500);
+        setVisible(true);
     }
 }
