@@ -2,6 +2,27 @@
 <project version="4">
   <component name="PublishConfigData" serverName="https://github.com/QuantonBiscuit/BattleShip-Game">
     <serverData>
+      <paths name="Banjo">
+        <serverdata>
+          <mappings>
+            <mapping local="$PROJECT_DIR$" web="/" />
+          </mappings>
+        </serverdata>
+      </paths>
+      <paths name="Kelvin">
+        <serverdata>
+          <mappings>
+            <mapping local="$PROJECT_DIR$" web="/" />
+          </mappings>
+        </serverdata>
+      </paths>
+      <paths name="Narwhals">
+        <serverdata>
+          <mappings>
+            <mapping local="$PROJECT_DIR$" web="/" />
+          </mappings>
+        </serverdata>
+      </paths>
       <paths name="https://github.com/QuantonBiscuit/BattleShip-Game">
         <serverdata>
           <mappings>

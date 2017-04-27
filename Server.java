@@ -3,6 +3,9 @@ import java.awt.*;
 import java.awt.event.*;
 import javax.swing.BorderFactory;
 import javax.swing.border.Border;
+import java.net.*;
+import java.util.*;
+import java.io.*;
 
 /**
  * Created by Jacob on 4/23/2017.
@@ -31,6 +34,10 @@ public class Server extends JFrame{
 
     //Border for JTextArea
     private Border border = BorderFactory.createLineBorder(Color.BLACK);
+
+    //ArrayList of Clients
+    private ArrayList<Socket> clients = new ArrayList<Socket>();
+
     public static void main(String[] args){
         new Server();
     }
@@ -60,5 +67,81 @@ public class Server extends JFrame{
         setSize(500,500);
         setVisible(true);
         setDefaultCloseOperation(EXIT_ON_CLOSE);
+
+        ServerSocket ss;
+
+        try{
+            ss = new ServerSocket(16789);
+            while(true){
+                Socket s = ss.accept();
+                clients.add(s);
+                ServerThread st = new ServerThread(s);
+                st.start();
+            }
+
+
+        }
+        catch(IOException e){
+            e.printStackTrace();
+        }
+    }
+
+    class ServerThread extends Thread{
+        Socket sock;
+        BufferedReader br;
+
+        public ServerThread(Socket _s){
+            sock = _s;
+            try{
+                br = new BufferedReader(new InputStreamReader(sock.getInputStream()));
+            }
+            catch(IOException e){
+                e.printStackTrace();
+            }
+        }
+
+        public void run(){
+            try{
+                while(br.ready()){
+                    //read in the first line to determine what type of data is being sent in
+                    String command = br.readLine();
+
+                    //If a message is being sent from the chat
+                    if(command == "CHAT"){
+                        String message = br.readLine();
+                        sendMessage(message);
+                    }
+                }
+            }
+            catch(IOException e){
+                e.printStackTrace();
+            }
+        }
+
+        public synchronized void sendMessage(String str){
+            try{
+                for(Socket s: clients){
+                    PrintWriter pw = new PrintWriter(new OutputStreamWriter(sock.getOutputStream()));
+                    pw.println("MESSAGE");
+                    pw.flush();
+                    pw.println(str);
+                    pw.flush();
+                }
+            }
+            catch(IOException e){
+                e.printStackTrace();
+            }
+        }
+
+        public synchronized void sendData(){
+            try{
+                PrintWriter pw = new PrintWriter(new OutputStreamWriter(sock.getOutputStream()));
+                pw.println("DATA");
+                pw.flush();
+            }
+            catch(IOException e){
+                e.printStackTrace();
+            }
+        }
     }
 }
