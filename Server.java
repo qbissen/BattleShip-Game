@@ -111,6 +111,14 @@ public class Server extends JFrame{
                         String message = br.readLine();
                         sendMessage(message);
                     }
+                    else if(command == "SPECTATOR-CHAT"){
+                        String message = br.readLine();
+                        sendSpectatorMessage(message);
+                    }
+                    else if(command == "DATA"){
+                        String player = br.readLine();
+                        sendData(player);
+                    }
                 }
             }
             catch(IOException e){
@@ -118,14 +126,15 @@ public class Server extends JFrame{
             }
         }
 
-        public synchronized void sendMessage(String str){
+        public synchronized void sendMessage(String msg){
             try{
                 for(Socket s: clients){
                     PrintWriter pw = new PrintWriter(new OutputStreamWriter(sock.getOutputStream()));
                     pw.println("MESSAGE");
                     pw.flush();
-                    pw.println(str);
+                    pw.println(msg);
                     pw.flush();
+                    pw.close();
                 }
             }
             catch(IOException e){
@@ -133,11 +142,28 @@ public class Server extends JFrame{
             }
         }
 
-        public synchronized void sendData(){
+        public synchronized void sendSpectatorMessage(String msg){
+            try{
+                for(Socket s: clients){
+                    PrintWriter pw = new PrintWriter(new OutputStreamWriter(sock.getOutputStream()));
+                    pw.println("SPECTATOR-MESSAGE");
+                    pw.flush();
+                    pw.println(msg);
+                    pw.flush();
+                    pw.close();
+                }
+            }
+            catch(IOException e){
+                e.printStackTrace();
+            }
+        }
+
+        public synchronized void sendData(String p){
             try{
                 PrintWriter pw = new PrintWriter(new OutputStreamWriter(sock.getOutputStream()));
                 pw.println("DATA");
                 pw.flush();
+                pw.close();
             }
             catch(IOException e){
                 e.printStackTrace();
