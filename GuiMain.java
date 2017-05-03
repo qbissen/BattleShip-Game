@@ -8,7 +8,7 @@ import java.awt.*;
  * guiMain creates and adds listeners for the GUI, it also sets up the actions that the user can input into the game.
  * It can communicate with BattleshipLogic to place fleets.
  */
-public class guiMain extends JFrame{
+public class GuiMain extends JFrame{
     private JButton[][] placementBoardArray; // 2D board of JLabels that allows a player to place and view their ships.
     private JButton[][] targetBoardArray; //2D board of JLabels that allows a player to target the other players ships.
     private final int columns = 10; //Columns in both JLabel boards.
@@ -33,12 +33,30 @@ public class guiMain extends JFrame{
     private ImageIcon smallGreen = new ImageIcon("resources/green.JPG"); //img used for player name joptionpane
     private ImageIcon smallOrange = new ImageIcon("resources/orange.jpg"); //img used for player name joptionpane
     private int turnDirtyBit;
+
+    private static String IP_ADDR;
+
+    public static void main(String []args){
+
+
+        if( args.length == 1){
+            IP_ADDR = args[0];
+            new GuiMain();
+        }
+        else
+        {
+            System.out.println("No IP address on command line, using localhost.");
+            System.out.println("Usage: java ChatClient <ChatServerIPAddress>");
+            IP_ADDR = "localhost";
+        }
+    }
     private BattleshipLogic logicClass = new BattleshipLogic();
     /*
        *This is the constructor for the GUI and action listeners.
        * It also calls calls the method to place the fleets on the board.
      */
-    private guiMain(){
+    private GuiMain(){
+
         createNewGame();
         logicClass.setFleetFormation();
     }
@@ -78,65 +96,66 @@ public class guiMain extends JFrame{
         *BuildGameBoard constructs the GUI but relies on the createPanels method to build the two grids that hold the fleets.
      */
     private void buildGameBoard(){
-        JPanel optionsBoard;
-        JPanel shipMonitorBoard;
-        JPanel friendlyMonitor;
-        JPanel enemyMonitor;
-        JPanel friendlyShipCheck;
-        JPanel enemyShipCheck;
-        JPanel backgroundBoard;
-        JLabel greenLabel;
-        JLabel orangeLabel;
-        JButton exitButton;
-        backgroundBoard = new JPanel(new BorderLayout());
-        optionsBoard = new JPanel(new FlowLayout());
-        shipMonitorBoard = new JPanel(new BorderLayout());
-        friendlyMonitor = new JPanel(new BorderLayout());
-        enemyMonitor = new JPanel(new BorderLayout());
+        JPanel backgroundBoard = new JPanel(new BorderLayout());
+        JPanel optionsBoard = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+        JPanel shipMonitorBoard = new JPanel(new BorderLayout());
+        JPanel friendlyMonitor = new JPanel(new BorderLayout());
+        JPanel enemyMonitor = new JPanel(new BorderLayout());
+
         targetBoard = new JPanel(new GridLayout(10,10));
         placementBoard = new JPanel(new GridLayout(10,10));
-        friendlyShipCheck = new JPanel(new GridLayout(1,4));
-        enemyShipCheck = new JPanel(new GridLayout(1,4));
+
+        JPanel friendlyShipCheck = new JPanel(new GridLayout(1,4));
+        JPanel enemyShipCheck = new JPanel(new GridLayout(1,4));
+
         placementBoardArray = new JButton[rows][columns];
         targetBoardArray = new JButton[rows][columns];
-        exitButton = new JButton("Exit");
-        greenLabel = new JLabel();
-        orangeLabel = new JLabel();
+
+        JButton exitButton = new JButton("Exit");
+        JLabel greenLabel = new JLabel();
+        JLabel orangeLabel = new JLabel();
         turnLabel = new JLabel("");
+        ChatClient chatClient = new ChatClient();
 
         createPanels();
 
         setLayout(new BorderLayout());
         setVisible(true);
-        setSize(1000,1000);
+        setSize(1200,1000);
         setLocation(500,0);
         setTitle("Quinn and Joe's Battleship Game");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+
         add(backgroundBoard,BorderLayout.CENTER);
         add(optionsBoard,BorderLayout.NORTH);
         add(shipMonitorBoard,BorderLayout.WEST);
+        add(chatClient, BorderLayout.EAST);
+
         backgroundBoard.add(targetBoard,BorderLayout.NORTH);
         backgroundBoard.add(placementBoard,BorderLayout.SOUTH);
+
         shipMonitorBoard.add(turnLabel,BorderLayout.CENTER);
         shipMonitorBoard.add(friendlyMonitor,BorderLayout.NORTH);
+        shipMonitorBoard.add(enemyMonitor,BorderLayout.SOUTH);
+
         friendlyMonitor.setBackground(Color.green);
         friendlyMonitor.add(greenLabel,BorderLayout.NORTH);
-        friendlyMonitor.add(friendlyShipCheck,BorderLayout.CENTER);
+        //friendlyMonitor.add(friendlyShipCheck,BorderLayout.CENTER);
         friendlyShipCheck.add(battleshipCheck);
         friendlyShipCheck.add(cruiserCheck);
         friendlyShipCheck.add(destroyerCheck);
         friendlyShipCheck.add(subCheck);
-        shipMonitorBoard.add(enemyMonitor,BorderLayout.SOUTH);
+
         enemyMonitor.setBackground(Color.orange);
         enemyMonitor.add(orangeLabel,BorderLayout.NORTH);
-        enemyMonitor.add(enemyShipCheck,BorderLayout.CENTER);
+        //enemyMonitor.add(enemyShipCheck,BorderLayout.CENTER);
         enemyShipCheck.add(battleshipCheck1);
         enemyShipCheck.add(cruiserCheck1);
         enemyShipCheck.add(destroyerCheck1);
         enemyShipCheck.add(subCheck1);
         optionsBoard.add(exitButton);
-        greenLabel.setText(greenName+"'s Fleet Status");
-        orangeLabel.setText(orangeName+"'s Fleet Status");
+        greenLabel.setText(greenName+"'s Fleet");
+        orangeLabel.setText(orangeName+"'s Fleet");
         exitButton.addActionListener(listenerTop);
     }
     /*
@@ -307,7 +326,7 @@ public class guiMain extends JFrame{
                 System.exit(0);
             }
             else if(eventTop.getActionCommand().equals("Start A New Game?")){
-                new guiMain();
+                new GuiMain();
             }
             else if(eventTop.getSource()instanceof JButton){
              /*
@@ -396,7 +415,5 @@ public class guiMain extends JFrame{
             checkWin(logicClass.getLogicBottomBoard(), "Top");
         }
     };
-    public static void main(String []args){
-        new guiMain();
-    }
+
 }
