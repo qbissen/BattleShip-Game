@@ -119,8 +119,9 @@ public class Server extends JFrame{
                     }
                     else if(command == "DATA"){
                         String player = br.readLine();
-                        int buttoneNum = obr.readInt();
-                        sendButtonNumber(buttoneNum, player);
+                        int buttoneNum1 = obr.readInt();
+                        int buttonNum2 = obr.readInt();
+                        sendButtonNumber(buttoneNum1, buttonNum2, player);
                     }
                     else if(command == "RESULT"){
                         String player = br.readLine();
@@ -166,7 +167,7 @@ public class Server extends JFrame{
             }
         }
 
-        public synchronized void sendButtonNumber(int i, String s){
+        public synchronized void sendButtonNumber(int i, int y, String s){
             try{
                 PrintWriter pw = new PrintWriter(new OutputStreamWriter(sock.getOutputStream()));
                 pw.println("DATA");
@@ -176,6 +177,8 @@ public class Server extends JFrame{
                 pw.close();
                 ObjectOutputStream oos = new ObjectOutputStream(sock.getOutputStream());
                 oos.writeInt(i);
+                oos.flush();
+                oos.writeInt(y);
                 oos.flush();
                 oos.close();
             }
