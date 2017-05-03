@@ -10,6 +10,14 @@
           <option name="port" value="21" />
         </fileTransfer>
       </webServer>
+      <webServer id="03bb5ac5-4133-4cbd-af5c-32adf2b4c926" name="Narwhals" url="http://Kelvin.ist.rit.edu">
+        <fileTransfer host="Kelvin.ist.rit.edu" port="22" rootFolder="/home/narwhals" accessType="SFTP">
+          <advancedOptions>
+            <advancedOptions dataProtectionLevel="Private" />
+          </advancedOptions>
+          <option name="port" value="22" />
+        </fileTransfer>
+      </webServer>
     </option>
   </component>
 </project>
