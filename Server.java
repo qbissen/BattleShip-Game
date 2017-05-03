@@ -130,6 +130,14 @@ public class Server extends JFrame{
                     }
                 }
             }
+            catch(NullPointerException e){
+                try {
+                    sock.close();
+                }
+                catch(IOException ex){
+                    ex.printStackTrace();
+                }
+            }
             catch(IOException e){
                 e.printStackTrace();
             }
@@ -138,12 +146,22 @@ public class Server extends JFrame{
         public synchronized void sendMessage(String msg){
             try{
                 for(Socket s: clients){
-                    PrintWriter pw = new PrintWriter(new OutputStreamWriter(sock.getOutputStream()));
-                    pw.println("MESSAGE");
-                    pw.flush();
-                    pw.println(msg);
-                    pw.flush();
-                    pw.close();
+                    try {
+                        PrintWriter pw = new PrintWriter(new OutputStreamWriter(s.getOutputStream()));
+                        pw.println("MESSAGE");
+                        pw.flush();
+                        pw.println(msg);
+                        pw.flush();
+                        pw.close();
+                    }
+                    catch(NullPointerException e){
+                        try{
+                            s.close();
+                        }
+                        catch(IOException ioe){
+                            ioe.printStackTrace();
+                        }
+                    }
                 }
             }
             catch(IOException e){
@@ -154,12 +172,22 @@ public class Server extends JFrame{
         public synchronized void sendSpectatorMessage(String msg){
             try{
                 for(Socket s: clients){
-                    PrintWriter pw = new PrintWriter(new OutputStreamWriter(sock.getOutputStream()));
-                    pw.println("SPECTATOR-MESSAGE");
-                    pw.flush();
-                    pw.println(msg);
-                    pw.flush();
-                    pw.close();
+                    try {
+                        PrintWriter pw = new PrintWriter(new OutputStreamWriter(s.getOutputStream()));
+                        pw.println("SPECTATOR-MESSAGE");
+                        pw.flush();
+                        pw.println(msg);
+                        pw.flush();
+                        pw.close();
+                    }
+                    catch(NullPointerException e){
+                        try{
+                            s.close();
+                        }
+                        catch(IOException ioe){
+                            ioe.printStackTrace();
+                        }
+                    }
                 }
             }
             catch(IOException e){
@@ -169,18 +197,30 @@ public class Server extends JFrame{
 
         public synchronized void sendButtonNumber(int i, int y, String s){
             try{
-                PrintWriter pw = new PrintWriter(new OutputStreamWriter(sock.getOutputStream()));
-                pw.println("DATA");
-                pw.flush();
-                pw.println(s);
-                pw.flush();
-                pw.close();
-                ObjectOutputStream oos = new ObjectOutputStream(sock.getOutputStream());
-                oos.writeInt(i);
-                oos.flush();
-                oos.writeInt(y);
-                oos.flush();
-                oos.close();
+                for(Socket so: clients) {
+                    try {
+                        PrintWriter pw = new PrintWriter(new OutputStreamWriter(so.getOutputStream()));
+                        pw.println("DATA");
+                        pw.flush();
+                        pw.println(s);
+                        pw.flush();
+                        pw.close();
+                        ObjectOutputStream oos = new ObjectOutputStream(sock.getOutputStream());
+                        oos.writeInt(i);
+                        oos.flush();
+                        oos.writeInt(y);
+                        oos.flush();
+                        oos.close();
+                    }
+                    catch(NullPointerException e){
+                        try{
+                            so.close();
+                        }
+                        catch(IOException ioe){
+                            ioe.printStackTrace();
+                        }
+                    }
+                }
             }
             catch(IOException e){
                 e.printStackTrace();
@@ -189,16 +229,28 @@ public class Server extends JFrame{
 
         public synchronized void sendResult(Boolean b, String s){
             try{
-                PrintWriter pw = new PrintWriter(new OutputStreamWriter(sock.getOutputStream()));
-                pw.println("RESULT");
-                pw.flush();
-                pw.println(s);
-                pw.flush();
-                pw.close();
-                ObjectOutputStream oos = new ObjectOutputStream(sock.getOutputStream());
-                oos.writeBoolean(b);
-                oos.flush();
-                oos.close();
+                for(Socket so: clients) {
+                    try {
+                        PrintWriter pw = new PrintWriter(new OutputStreamWriter(sock.getOutputStream()));
+                        pw.println("RESULT");
+                        pw.flush();
+                        pw.println(s);
+                        pw.flush();
+                        pw.close();
+                        ObjectOutputStream oos = new ObjectOutputStream(sock.getOutputStream());
+                        oos.writeBoolean(b);
+                        oos.flush();
+                        oos.close();
+                    }
+                    catch(NullPointerException e){
+                        try {
+                            so.close();
+                        }
+                        catch(IOException ioe){
+                            ioe.printStackTrace();
+                        }
+                    }
+                }
             }
             catch(IOException e){
                 e.printStackTrace();
