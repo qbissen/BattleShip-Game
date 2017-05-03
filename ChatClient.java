@@ -5,37 +5,16 @@ import java.io.*;
 import java.net.*;
 import java.util.*;
 
-public class ChatClient extends JFrame
+public class ChatClient extends JPanel
 {
-   static String IP_ADDR;
    final int PORT = 16789;
-
-   Socket sock;
-
-   JTextArea jtaMessages;
-   JTextField jtfSendMessage;
-   BufferedReader brInput;
-   PrintWriter pwOutput;
-
-   public static void main(String[] args) 
-   {
-		if( args.length == 1){
-			IP_ADDR = args[0];
-		}
-		else	
-		{
-			System.out.println("No IP address on command line, using localhost.");
-			System.out.println("Usage: java ChatClient <ChatServerIPAddress>");
-			IP_ADDR = "localhost";
-		}
-      new ChatClient();
-   }
+   private JTextArea jtaMessages;
+   private JTextField jtfSendMessage;
+   private BufferedReader brInput;
+   private PrintWriter pwOutput;
 
    public ChatClient() {
-   
-  
-      setTitle("Chat Client");
-  
+      setLayout(new BorderLayout());
       JLabel jlTitle = 
 			new JLabel("<html><b>Easy Chat Client</b></html>",JLabel.CENTER );
 			
@@ -60,14 +39,11 @@ public class ChatClient extends JFrame
       add( jpSendingInfo, BorderLayout.SOUTH);
    
         // GUI has been built, display it centered
-        pack();
-        setDefaultCloseOperation(EXIT_ON_CLOSE);
-        setLocationRelativeTo(null);
       setVisible(true);
 		jtfSendMessage.requestFocus();
       
       try {
-         sock = new Socket("localhost", 16789);
+         Socket sock = new Socket("localhost", 16789);
          brInput = new BufferedReader(new InputStreamReader(sock.getInputStream()));
          pwOutput = new PrintWriter(sock.getOutputStream());
          
@@ -78,7 +54,6 @@ public class ChatClient extends JFrame
       }
          
    }
-
 
    public class SendButtonListener implements ActionListener
    {
@@ -106,7 +81,5 @@ public class ChatClient extends JFrame
             e.printStackTrace();
          }
       }
-
    }
-
 } 
