@@ -33,12 +33,9 @@ public class GuiMain extends JFrame{
     private ImageIcon smallGreen = new ImageIcon("resources/green.JPG"); //img used for player name joptionpane
     private ImageIcon smallOrange = new ImageIcon("resources/orange.jpg"); //img used for player name joptionpane
     private int turnDirtyBit;
-
     private static String IP_ADDR;
 
     public static void main(String []args){
-
-
         if( args.length == 1){
             IP_ADDR = args[0];
             new GuiMain();
@@ -112,6 +109,8 @@ public class GuiMain extends JFrame{
         targetBoardArray = new JButton[rows][columns];
 
         JButton exitButton = new JButton("Exit");
+        JButton resetButton = new JButton("Reset Game");
+
         JLabel greenLabel = new JLabel();
         JLabel orangeLabel = new JLabel();
         turnLabel = new JLabel("");
@@ -154,9 +153,11 @@ public class GuiMain extends JFrame{
         enemyShipCheck.add(destroyerCheck1);
         enemyShipCheck.add(subCheck1);
         optionsBoard.add(exitButton);
+        optionsBoard.add(resetButton);
         greenLabel.setText(greenName+"'s Fleet");
         orangeLabel.setText(orangeName+"'s Fleet");
         exitButton.addActionListener(listenerTop);
+        resetButton.addActionListener(listenerTop);
     }
     /*
         *createPanels uses a double for loop to iteratively build the two grids that hold the ships
