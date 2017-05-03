@@ -9,12 +9,12 @@ import java.awt.*;
  * It can communicate with BattleshipLogic to place fleets.
  */
 public class GuiMain extends JFrame{
-    private JButton[][] placementBoardArray; // 2D board of JLabels that allows a player to place and view their ships.
-    private JButton[][] targetBoardArray; //2D board of JLabels that allows a player to target the other players ships.
+    private JButton[][] bottomBoardArray; // 2D board of JLabels that allows a player to place and view their ships.
+    private JButton[][] topBoardArray; //2D board of JLabels that allows a player to target the other players ships.
     private final int columns = 10; //Columns in both JLabel boards.
     private final int rows = 10; //Rows in both JLabel boards.
-    private JPanel placementBoard; //JPanel for the top board
-    private JPanel targetBoard; //JPanel for the bottom board
+    private JPanel bottomBoardPanel; //JPanel for the top board
+    private JPanel topBoardPanel; //JPanel for the bottom board
     private String greenName; //Green player's name label
     private String orangeName; //Orange player's name label
     private ImageIcon battleshipImage = new ImageIcon("resources/battleship.png");
@@ -56,6 +56,7 @@ public class GuiMain extends JFrame{
 
         createNewGame();
         logicClass.setFleetFormation();
+        showFriendlyFleet();
     }
     /*
         *createNewGame gathers user input for their name, then sets the board. It also calls the method to see what player's turn it is.
@@ -99,14 +100,14 @@ public class GuiMain extends JFrame{
         JPanel friendlyMonitor = new JPanel(new BorderLayout());
         JPanel enemyMonitor = new JPanel(new BorderLayout());
 
-        targetBoard = new JPanel(new GridLayout(10,10));
-        placementBoard = new JPanel(new GridLayout(10,10));
+        topBoardPanel = new JPanel(new GridLayout(10,10));
+        bottomBoardPanel = new JPanel(new GridLayout(10,10));
 
-        JPanel friendlyShipCheck = new JPanel(new GridLayout(1,4));
-        JPanel enemyShipCheck = new JPanel(new GridLayout(1,4));
+        JPanel friendlyShipCheck = new JPanel(new GridLayout(2,2));
+        JPanel enemyShipCheck = new JPanel(new GridLayout(2,2));
 
-        placementBoardArray = new JButton[rows][columns];
-        targetBoardArray = new JButton[rows][columns];
+        bottomBoardArray = new JButton[rows][columns];
+        topBoardArray = new JButton[rows][columns];
 
         JButton exitButton = new JButton("Exit");
         JButton resetButton = new JButton("Reset Game");
@@ -130,8 +131,8 @@ public class GuiMain extends JFrame{
         add(shipMonitorBoard,BorderLayout.WEST);
         add(chatClient, BorderLayout.EAST);
 
-        backgroundBoard.add(targetBoard,BorderLayout.NORTH);
-        backgroundBoard.add(placementBoard,BorderLayout.SOUTH);
+        backgroundBoard.add(topBoardPanel,BorderLayout.NORTH);
+        backgroundBoard.add(bottomBoardPanel,BorderLayout.SOUTH);
 
         shipMonitorBoard.add(turnLabel,BorderLayout.CENTER);
         shipMonitorBoard.add(friendlyMonitor,BorderLayout.NORTH);
@@ -139,7 +140,7 @@ public class GuiMain extends JFrame{
 
         friendlyMonitor.setBackground(Color.green);
         friendlyMonitor.add(greenLabel,BorderLayout.NORTH);
-        //friendlyMonitor.add(friendlyShipCheck,BorderLayout.CENTER);
+        friendlyMonitor.add(friendlyShipCheck,BorderLayout.CENTER);
         friendlyShipCheck.add(battleshipCheck);
         friendlyShipCheck.add(cruiserCheck);
         friendlyShipCheck.add(destroyerCheck);
@@ -147,7 +148,7 @@ public class GuiMain extends JFrame{
 
         enemyMonitor.setBackground(Color.orange);
         enemyMonitor.add(orangeLabel,BorderLayout.NORTH);
-        //enemyMonitor.add(enemyShipCheck,BorderLayout.CENTER);
+        enemyMonitor.add(enemyShipCheck,BorderLayout.CENTER);
         enemyShipCheck.add(battleshipCheck1);
         enemyShipCheck.add(cruiserCheck1);
         enemyShipCheck.add(destroyerCheck1);
@@ -176,11 +177,11 @@ public class GuiMain extends JFrame{
                 } catch (Exception ex) {
                     System.out.println("Failed to create an icon");
                 }
-                placementBoardArray[c][g] = button;
-                placementBoardArray[c][g].putClientProperty("column", g);
-                placementBoardArray[c][g].putClientProperty("row", c);
-                placementBoardArray[c][g].addActionListener(listenerBottom);
-                placementBoard.add(placementBoardArray[c][g]);
+                bottomBoardArray[c][g] = button;
+                bottomBoardArray[c][g].putClientProperty("column", g);
+                bottomBoardArray[c][g].putClientProperty("row", c);
+                bottomBoardArray[c][g].addActionListener(listenerBottom);
+                bottomBoardPanel.add(bottomBoardArray[c][g]);
                 JButton button1 = new JButton();
                 button1.setPreferredSize(new Dimension(40, 40));
                 try {
@@ -189,11 +190,11 @@ public class GuiMain extends JFrame{
                 } catch (Exception ex) {
                     System.out.println("Failed to create an icon");
                 }
-                targetBoardArray[c][g] = button1;
-                targetBoardArray[c][g].putClientProperty("column", g);
-                targetBoardArray[c][g].putClientProperty("row", c);
-                targetBoardArray[c][g].addActionListener(listenerTop);
-                targetBoard.add(targetBoardArray[c][g]);
+                topBoardArray[c][g] = button1;
+                topBoardArray[c][g].putClientProperty("column", g);
+                topBoardArray[c][g].putClientProperty("row", c);
+                topBoardArray[c][g].addActionListener(listenerTop);
+                topBoardPanel.add(topBoardArray[c][g]);
             }
         }
     }
@@ -232,19 +233,19 @@ public class GuiMain extends JFrame{
         {
             turnLabel.setText(greenName+"'s Turn");
             turnDirtyBit = 2;
-            //placementBoardArray[c][g].setEnabled();
-            //targetBoardArray[][].removeActionListener(listener);
+            //bottomBoardArray[c][g].setEnabled();
+            //topBoardArray[][].removeActionListener(listener);
             //button.setEnabled(false);
-            targetBoard.setEnabled(false);
+            topBoardPanel.setEnabled(false);
             System.out.println("Changed turn");
         }
         else if(turnDirtyBit == 2)
         {
             turnLabel.setText(orangeName+"'s Turn");
             turnDirtyBit = 1;
-            //placementBoardArray[][].addActionListener(listener);
-            //targetBoardArray[][].removeActionListener(listener);
-            placementBoard.setEnabled(false);
+            //bottomBoardArray[][].addActionListener(listener);
+            //topBoardArray[][].removeActionListener(listener);
+            bottomBoardPanel.setEnabled(false);
             System.out.println("Changed turn");
 
         }
@@ -315,6 +316,22 @@ public class GuiMain extends JFrame{
         exit.addActionListener(listenerTop);
         newGame.addActionListener(listenerTop);
     }
+    private void showFriendlyFleet(){
+        int friendlyFleetArray[][] = logicClass.getLogicTopBoard();
+
+        for(int i = 0; i < friendlyFleetArray.length; i++){
+            for(int j = 0; j< friendlyFleetArray.length; j++){
+                if(friendlyFleetArray[i][j]==2){
+                    try {
+                        Image img = ImageIO.read(getClass().getResource("resources/ship.png"));
+                        topBoardArray[i][j].setIcon(new ImageIcon(img));
+                    } catch (Exception ex) {
+                        System.out.println("Failed to create an icon");
+                    }
+                }
+            }
+        }
+    }
     /*
         *The two ActionListener classes listen for actions. Once a button is clicked they perform the action specified.
         * There is a anonymous inner classes for each grid of JButtons.
@@ -325,6 +342,9 @@ public class GuiMain extends JFrame{
         public void actionPerformed(ActionEvent eventTop){
             if (eventTop.getActionCommand().equals("Exit")){
                 System.exit(0);
+            }
+            else if(eventTop.getActionCommand().equals("Reset Game")){
+
             }
             else if(eventTop.getActionCommand().equals("Start A New Game?")){
                 new GuiMain();
