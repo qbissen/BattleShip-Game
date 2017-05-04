@@ -50,6 +50,7 @@ public class Server extends JFrame{
             ss = new ServerSocket(16789);
             while(true){
                 Socket s = ss.accept();
+                jta.append("Connection from " + s.getInetAddress());
                 clients.add(s);
                 ServerThread st = new ServerThread(s);
                 st.start();
