@@ -116,7 +116,6 @@ public class H7Client implements ActionListener {
         }
 
         public void run() {
-            while (true) {
                 try {
 
                     // open output stream
@@ -129,6 +128,7 @@ public class H7Client implements ActionListener {
 
                     // make sure it went
                     pout.flush();
+                    pout.close();
 
                 } catch (UnknownHostException uhe) {
                     System.out.println("What host you speak of?");
@@ -136,8 +136,6 @@ public class H7Client implements ActionListener {
                     System.out.println("Bad IO?");
                     ioe.printStackTrace();
                 }
-
-            }
         }
     }
         public void actionPerformed(ActionEvent event) {
