@@ -34,6 +34,8 @@ public class GuiMain extends JFrame{
     private ImageIcon smallOrange = new ImageIcon("resources/orange.jpg"); //img used for player name joptionpane
     private int turnDirtyBit;
     private static String IP_ADDR;
+    private JButton button;
+    private JButton button1;
 
     public static void main(String []args){
         if( args.length == 1){
@@ -100,7 +102,14 @@ public class GuiMain extends JFrame{
         JPanel friendlyMonitor = new JPanel(new BorderLayout());
         JPanel enemyMonitor = new JPanel(new BorderLayout());
 
+        JPanel topBoardGlassPanel = new JPanel();
+        topBoardGlassPanel.setOpaque(false);
+        topBoardGlassPanel.setBackground(Color.gray);
         topBoardPanel = new JPanel(new GridLayout(10,10));
+
+        JPanel bottomBoardGlassPanel = new JPanel();
+        bottomBoardGlassPanel.setOpaque(false);
+        bottomBoardGlassPanel.setBackground(Color.gray);
         bottomBoardPanel = new JPanel(new GridLayout(10,10));
 
         JPanel friendlyShipCheck = new JPanel(new GridLayout(2,2));
@@ -165,7 +174,7 @@ public class GuiMain extends JFrame{
         * It will also set the icon images and add action listeners to the grids
      */
     private void createPanels(){
-        JButton button;
+
         for(int c = 0;c<rows;c++)
         {
             for(int g = 0;g<columns;g++) {
@@ -182,7 +191,7 @@ public class GuiMain extends JFrame{
                 bottomBoardArray[c][g].putClientProperty("row", c);
                 bottomBoardArray[c][g].addActionListener(listenerBottom);
                 bottomBoardPanel.add(bottomBoardArray[c][g]);
-                JButton button1 = new JButton();
+                button1 = new JButton();
                 button1.setPreferredSize(new Dimension(40, 40));
                 try {
                     Image img = ImageIO.read(getClass().getResource("resources/tileImage.jpg"));
@@ -236,8 +245,13 @@ public class GuiMain extends JFrame{
             //bottomBoardArray[c][g].setEnabled();
             //topBoardArray[][].removeActionListener(listener);
             //button.setEnabled(false);
-            topBoardPanel.setEnabled(false);
             System.out.println("Changed turn");
+            for(int i=0; i< 10; i++){
+                for(int j=0; j<10; j++){
+                    topBoardArray[i][j].setEnabled(false);
+                    bottomBoardArray[i][j].setEnabled(true);
+                }
+            }
         }
         else if(turnDirtyBit == 2)
         {
@@ -245,9 +259,13 @@ public class GuiMain extends JFrame{
             turnDirtyBit = 1;
             //bottomBoardArray[][].addActionListener(listener);
             //topBoardArray[][].removeActionListener(listener);
-            bottomBoardPanel.setEnabled(false);
             System.out.println("Changed turn");
-
+            for(int i=0; i< 10; i++){
+                for(int j=0; j<10; j++){
+                    bottomBoardArray[i][j].setEnabled(false);
+                    topBoardArray[i][j].setEnabled(true);
+                }
+            }
         }
     }
     /*
@@ -436,5 +454,4 @@ public class GuiMain extends JFrame{
             checkWin(logicClass.getLogicBottomBoard(), "Top");
         }
     };
-
 }
