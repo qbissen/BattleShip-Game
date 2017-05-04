@@ -89,11 +89,13 @@ public class Server extends JFrame{
     class ServerThread extends Thread{
         Socket sock;
         BufferedReader br;
+        ObjectInputStream obr;
 
         public ServerThread(Socket _s){
             sock = _s;
             try{
                 br = new BufferedReader(new InputStreamReader(sock.getInputStream()));
+                obr = new ObjectInputStream(sock.getInputStream());
             }
             catch(IOException e){
                 e.printStackTrace();
@@ -117,7 +119,13 @@ public class Server extends JFrame{
                     }
                     else if(command == "DATA"){
                         String player = br.readLine();
-                        sendData(player);
+                        int buttoneNum = obr.readInt();
+                        sendButtonNumber(buttoneNum, player);
+                    }
+                    else if(command == "RESULT"){
+                        String player = br.readLine();
+                        boolean isHit = obr.readBoolean();
+                        sendResult(isHit, player);
                     }
                 }
             }
@@ -158,12 +166,36 @@ public class Server extends JFrame{
             }
         }
 
-        public synchronized void sendData(String p){
+        public synchronized void sendButtonNumber(int i, String s){
             try{
                 PrintWriter pw = new PrintWriter(new OutputStreamWriter(sock.getOutputStream()));
                 pw.println("DATA");
                 pw.flush();
+                pw.println(s);
+                pw.flush();
                 pw.close();
+                ObjectOutputStream oos = new ObjectOutputStream(sock.getOutputStream());
+                oos.writeInt(i);
+                oos.flush();
+                oos.close();
+            }
+            catch(IOException e){
+                e.printStackTrace();
+            }
+        }
+
+        public synchronized void sendResult(Boolean b, String s){
+            try{
+                PrintWriter pw = new PrintWriter(new OutputStreamWriter(sock.getOutputStream()));
+                pw.println("RESULT");
+                pw.flush();
+                pw.println(s);
+                pw.flush();
+                pw.close();
+                ObjectOutputStream oos = new ObjectOutputStream(sock.getOutputStream());
+                oos.writeBoolean(b);
+                oos.flush();
+                oos.close();
             }
             catch(IOException e){
                 e.printStackTrace();
