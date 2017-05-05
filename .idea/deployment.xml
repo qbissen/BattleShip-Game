@@ -1,21 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
-  <component name="PublishConfigData" serverName="https://github.com/QuantonBiscuit/BattleShip-Game">
+  <component name="PublishConfigData" serverName="https://github.com/QuantonBiscuit/BattleShip-Game" uploadOnCheckin="adf25cd8-b97a-495f-9a2f-9b29466d9ecd">
     <serverData>
-      <paths name="Banjo">
-        <serverdata>
-          <mappings>
-            <mapping local="$PROJECT_DIR$" web="/" />
-          </mappings>
-        </serverdata>
-      </paths>
-      <paths name="Kelvin">
-        <serverdata>
-          <mappings>
-            <mapping local="$PROJECT_DIR$" web="/" />
-          </mappings>
-        </serverdata>
-      </paths>
       <paths name="Narwhals">
         <serverdata>
           <mappings>
@@ -31,5 +17,6 @@
         </serverdata>
       </paths>
     </serverData>
+    <option name="myUploadOnCheckinName" value="https://github.com/QuantonBiscuit/BattleShip-Game" />
   </component>
 </project>
