@@ -84,7 +84,7 @@ public class ChatClient extends JPanel
       public void run() {
          String message = "";
          try {
-            while((message = ois.readLine()) != null) {
+            while((message = ois.readUTF()) != null) {
                jtaMessages.append(message + "\n");
             } 
             }

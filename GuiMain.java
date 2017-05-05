@@ -84,6 +84,10 @@ public class GuiMain extends JFrame{
                 JOptionPane.showMessageDialog(pane,"Please enter a name for Player two!","Green Player Error",JOptionPane.WARNING_MESSAGE);
                 greenName = (String) JOptionPane.showInputDialog(pane,"Enter player two's name:","Green Player Name",JOptionPane.QUESTION_MESSAGE, smallGreen,null,null);
             }
+//            while(IP_ADDR.isEmpty()){
+//                JOptionPane.showMessageDialog(pane,"Please enter in the server IP Address.", "IP Address Error", JOptionPane.WARNING_MESSAGE);
+//                IP_ADDR = (int) JOptionPane.showInputDialog(pane, "Enter the server IP Address", JOptionPane.QUESTION_MESSAGE);
+//            }
             buildGameBoard();
             randomizeTurn();
         }
