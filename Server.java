@@ -108,22 +108,22 @@ public class Server extends JFrame implements ActionListener{
         }
     }
 
-    class startServer implements Runnable{
-        public void run(){
-            doStart();
-        }
-    }
 
 
     class ServerThread extends Thread{
         Socket sock;
-        BufferedReader br;
+//        BufferedReader br;
         ObjectInputStream obr;
+
+//        private InetAddress address = sock.getInetAddress();
+//        private String netAdress = address.getHostAddress();
+
+        String uName;
 
         public ServerThread(Socket _s){
             sock = _s;
             try{
-                br = new BufferedReader(new InputStreamReader(sock.getInputStream()));
+//                br = new BufferedReader(new InputStreamReader(sock.getInputStream()));
                 obr = new ObjectInputStream(sock.getInputStream());
             }
             catch(IOException e){
@@ -136,41 +136,47 @@ public class Server extends JFrame implements ActionListener{
 
                 doStartGame();
 
-                while(br.ready()){
-                    //read in the first line to determine what type of data is being sent in
-                    String command = br.readLine();
+                while(true){
+                    //read in the first line to determine what type of information is being sent in
+                    String command = obr.readUTF();
 
                     //If a message is being sent from the chat
                     if(command == "CHAT"){
-                        String username = br.readLine();
-                        String message = br.readLine();
+                        String username = obr.readUTF();
+                        String message = obr.readUTF();
                         sendMessage(message, username);
+                        uName = username;
                     }
                     else if(command == "SPECTATOR-CHAT"){
-                        String username = br.readLine();
-                        String message = br.readLine();
+                        String username = obr.readUTF();
+                        String message = obr.readUTF();
                         sendSpectatorMessage(message, username);
+                        uName = username;
                     }
                     else if(command == "DATA"){
-                        String player = br.readLine();
+                        String player = obr.readUTF();
                         int row = obr.readInt();
                         int column = obr.readInt();
                         sendButtonNumber(row, column, player);
                     }
                     else if(command == "RESULT"){
-                        String player = br.readLine();
+                        String player = obr.readUTF();;
                         boolean isHit = obr.readBoolean();
                         sendResult(isHit, player);
                     }
                     else if(command == "DECLARE-WINNER"){
-                        String player = br.readLine();
+                        String player = obr.readUTF();
                         declareWinner(player);
                     }
                 }
             }
+            catch(SocketException e){
+                e.printStackTrace();
+            }
             catch(UnknownHostException e){
                 try {
                     sock.close();
+                    jta.append(uName + " disconnected");
                 }
                 catch(IOException ioe){
                     ioe.printStackTrace();
