@@ -124,7 +124,7 @@ public class GuiMain extends JFrame{
         JLabel greenLabel = new JLabel();
         JLabel orangeLabel = new JLabel();
         turnLabel = new JLabel("");
-        ChatClient chatClient = new ChatClient();
+        ChatClient chatClient = new ChatClient(IP_ADDR);
 
         createPanels();
 

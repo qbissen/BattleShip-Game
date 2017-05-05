@@ -12,8 +12,10 @@ public class ChatClient extends JPanel
    private JTextField jtfSendMessage;
    private BufferedReader brInput;
    private PrintWriter pwOutput;
+   private ObjectOutputStream oos;
+   ObjectInputStream ois;
 
-   public ChatClient() {
+   public ChatClient(String _hostName) {
       setLayout(new BorderLayout());
       JLabel jlTitle = 
 			new JLabel("<html><b>Easy Chat Client</b></html>",JLabel.CENTER );
@@ -43,9 +45,13 @@ public class ChatClient extends JPanel
 		jtfSendMessage.requestFocus();
       
       try {
-         Socket sock = new Socket("localhost", 16789);
-         brInput = new BufferedReader(new InputStreamReader(sock.getInputStream()));
-         pwOutput = new PrintWriter(sock.getOutputStream());
+         Socket sock = new Socket(_hostName, 16789);
+
+         OutputStream out = sock.getOutputStream();
+         oos = new ObjectOutputStream(out);
+
+         InputStream in = sock.getInputStream();
+         ois = new ObjectInputStream(in);
          
          new ReceiveMessage().start();
          }
@@ -61,8 +67,13 @@ public class ChatClient extends JPanel
       {
          String data = jtfSendMessage.getText();
          if(data != null && !data.isEmpty()) {
-            pwOutput.println(data);
-            pwOutput.flush();
+            try {
+               oos.writeUTF("CHAT");
+               oos.writeUTF(data);
+               oos.flush();
+            }catch(IOException io){
+
+            }
             
             jtfSendMessage.setText("");
          }
@@ -73,7 +84,7 @@ public class ChatClient extends JPanel
       public void run() {
          String message = "";
          try {
-            while((message = brInput.readLine()) != null) {
+            while((message = ois.readLine()) != null) {
                jtaMessages.append(message + "\n");
             } 
             }
