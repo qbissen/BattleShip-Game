@@ -11,7 +11,7 @@ import java.io.*;
  * Created by Jacob on 4/23/2017.
  * Server for Main game and ChatClient
  */
-public class Server extends JFrame{
+public class Server extends JFrame implements ActionListener{
 
     //JTextArea + JScrollPane
     private JTextArea jta = new JTextArea(20,40);
@@ -19,18 +19,33 @@ public class Server extends JFrame{
 
     //JPanels
     private JPanel jpTextArea = new JPanel();
+    private JPanel jpConnectionInfo = new JPanel(new GridLayout(0,2));
+    private JPanel jpButton = new JPanel();
+
+    //JButton
+    private JButton jbStart = new JButton("Start");
+
+    //JLabel
+    private JLabel jlIP = new JLabel("IP Address: ");
+    private JLabel jlPort = new JLabel("Port: 16789");
 
     //Border for JTextArea
     private Border border = BorderFactory.createLineBorder(Color.BLACK);
 
     //ArrayList of Clients
-    private ArrayList<Socket> clients = new ArrayList<Socket>();
+    private Vector<Socket> clients = new Vector<Socket>();
 
     public static void main(String[] args){
         new Server();
     }
 
     private Server(){
+
+        jpConnectionInfo.add(jlIP);
+        jpConnectionInfo.add(jlPort);
+        add(jpConnectionInfo, BorderLayout.NORTH);
+
+
         jta.setBorder(BorderFactory.createCompoundBorder(border,
                 BorderFactory.createEmptyBorder(10, 10, 10, 10)));
         jta.setEnabled(false);
@@ -39,14 +54,42 @@ public class Server extends JFrame{
 
         add(jpTextArea, BorderLayout.CENTER);
 
+        jpButton.add(jbStart);
+        add(jpButton,BorderLayout.SOUTH);
+
+        jbStart.addActionListener(this);
+
         setLocationRelativeTo(null);
         setSize(500,500);
         setVisible(true);
         setDefaultCloseOperation(EXIT_ON_CLOSE);
 
+    }
+
+    public void actionPerformed(ActionEvent e){
+        if(e.getSource().equals(jbStart)){
+
+            Runnable r = new Runnable () {
+                public void run() {
+                    doStart();
+                }
+            };
+            new Thread(r).start();
+        }
+    }
+
+    public void doStart(){
+
+        jbStart.setEnabled(false);
+
         ServerSocket ss;
 
         try{
+           InetAddress address = InetAddress.getLocalHost();
+           String hostIP = address.getHostAddress();
+
+           jlIP.setText("IP Address: " + hostIP);
+
             ss = new ServerSocket(16789);
             while(true){
                 Socket s = ss.accept();
@@ -56,12 +99,21 @@ public class Server extends JFrame{
                 st.start();
             }
 
-
+        }
+        catch(SocketException e){
+            e.printStackTrace();
         }
         catch(IOException e){
             e.printStackTrace();
         }
     }
+
+    class startServer implements Runnable{
+        public void run(){
+            doStart();
+        }
+    }
+
 
     class ServerThread extends Thread{
         Socket sock;
@@ -81,29 +133,47 @@ public class Server extends JFrame{
 
         public void run(){
             try{
+
+                doStartGame();
+
                 while(br.ready()){
                     //read in the first line to determine what type of data is being sent in
                     String command = br.readLine();
 
                     //If a message is being sent from the chat
                     if(command == "CHAT"){
+                        String username = br.readLine();
                         String message = br.readLine();
-                        sendMessage(message);
+                        sendMessage(message, username);
                     }
                     else if(command == "SPECTATOR-CHAT"){
+                        String username = br.readLine();
                         String message = br.readLine();
-                        sendSpectatorMessage(message);
+                        sendSpectatorMessage(message, username);
                     }
                     else if(command == "DATA"){
                         String player = br.readLine();
-                        int buttoneNum = obr.readInt();
-                        sendButtonNumber(buttoneNum, player);
+                        int row = obr.readInt();
+                        int column = obr.readInt();
+                        sendButtonNumber(row, column, player);
                     }
                     else if(command == "RESULT"){
                         String player = br.readLine();
                         boolean isHit = obr.readBoolean();
                         sendResult(isHit, player);
                     }
+                    else if(command == "DECLARE-WINNER"){
+                        String player = br.readLine();
+                        declareWinner(player);
+                    }
+                }
+            }
+            catch(UnknownHostException e){
+                try {
+                    sock.close();
+                }
+                catch(IOException ioe){
+                    ioe.printStackTrace();
                 }
             }
             catch(IOException e){
@@ -111,12 +181,42 @@ public class Server extends JFrame{
             }
         }
 
-        public synchronized void sendMessage(String msg){
+        public synchronized void declareWinner(String player){
             try{
                 for(Socket s: clients){
-                    PrintWriter pw = new PrintWriter(new OutputStreamWriter(sock.getOutputStream()));
+                    PrintWriter pw = new PrintWriter(new OutputStreamWriter(s.getOutputStream()));
+                    pw.println(player);
+                    pw.flush();
+                    pw.close();
+                }
+            }
+            catch(IOException e){
+                e.printStackTrace();
+            }
+        }
+
+        public synchronized void doStartGame(){
+            try{
+                for(Socket s: clients){
+                    ObjectOutputStream oos = new ObjectOutputStream(s.getOutputStream());
+                    oos.writeDouble(1 + (int)(Math.random() * 2));
+                    oos.flush();
+                    oos.close();
+                }
+            }
+            catch(IOException e){
+                e.printStackTrace();
+            }
+        }
+
+        public synchronized void sendMessage(String msg, String username){
+            try{
+                for(Socket s: clients){
+                    PrintWriter pw = new PrintWriter(new OutputStreamWriter(s.getOutputStream()));
                     pw.println("MESSAGE");
                     pw.flush();
+                    pw.println(username);
+                    pw.flush();
                     pw.println(msg);
                     pw.flush();
                     pw.close();
@@ -127,11 +227,13 @@ public class Server extends JFrame{
             }
         }
 
-        public synchronized void sendSpectatorMessage(String msg){
+        public synchronized void sendSpectatorMessage(String msg, String username){
             try{
                 for(Socket s: clients){
-                    PrintWriter pw = new PrintWriter(new OutputStreamWriter(sock.getOutputStream()));
+                    PrintWriter pw = new PrintWriter(new OutputStreamWriter(s.getOutputStream()));
                     pw.println("SPECTATOR-MESSAGE");
+                    pw.flush();
+                    pw.println(username);
                     pw.flush();
                     pw.println(msg);
                     pw.flush();
@@ -143,18 +245,21 @@ public class Server extends JFrame{
             }
         }
 
-        public synchronized void sendButtonNumber(int i, String s){
+        public synchronized void sendButtonNumber(int row, int column, String s){
             try{
-                PrintWriter pw = new PrintWriter(new OutputStreamWriter(sock.getOutputStream()));
-                pw.println("DATA");
-                pw.flush();
-                pw.println(s);
-                pw.flush();
-                pw.close();
-                ObjectOutputStream oos = new ObjectOutputStream(sock.getOutputStream());
-                oos.writeInt(i);
-                oos.flush();
-                oos.close();
+                for(Socket so: clients) {
+                    PrintWriter pw = new PrintWriter(new OutputStreamWriter(so.getOutputStream()));
+                    pw.println("DATA");
+                    pw.flush();
+                    pw.println(s);
+                    pw.flush();
+                    pw.close();
+                    ObjectOutputStream oos = new ObjectOutputStream(so.getOutputStream());
+                    oos.writeInt(row);
+                    oos.flush();
+                    oos.writeInt(column);
+                    oos.close();
+                }
             }
             catch(IOException e){
                 e.printStackTrace();
@@ -163,16 +268,18 @@ public class Server extends JFrame{
 
         public synchronized void sendResult(Boolean b, String s){
             try{
-                PrintWriter pw = new PrintWriter(new OutputStreamWriter(sock.getOutputStream()));
-                pw.println("RESULT");
-                pw.flush();
-                pw.println(s);
-                pw.flush();
-                pw.close();
-                ObjectOutputStream oos = new ObjectOutputStream(sock.getOutputStream());
-                oos.writeBoolean(b);
-                oos.flush();
-                oos.close();
+                for(Socket so: clients) {
+                    PrintWriter pw = new PrintWriter(new OutputStreamWriter(so.getOutputStream()));
+                    pw.println("RESULT");
+                    pw.flush();
+                    pw.println(s);
+                    pw.flush();
+                    pw.close();
+                    ObjectOutputStream oos = new ObjectOutputStream(so.getOutputStream());
+                    oos.writeBoolean(b);
+                    oos.flush();
+                    oos.close();
+                }
             }
             catch(IOException e){
                 e.printStackTrace();
