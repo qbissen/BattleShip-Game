@@ -61,10 +61,8 @@ public class ChatClient extends JPanel
          
    }
 
-   public class SendButtonListener implements ActionListener
-   {
-      public void actionPerformed(ActionEvent evt) 
-      {
+   public class SendButtonListener implements ActionListener {
+      public void actionPerformed(ActionEvent evt) {
          String data = jtfSendMessage.getText();
          if(data != null && !data.isEmpty()) {
             try {
@@ -82,13 +80,19 @@ public class ChatClient extends JPanel
    
    class ReceiveMessage extends Thread {
       public void run() {
-         String message = "";
-         try {
-               jtaMessages.append(message + "\n");
-            }
-         catch(Exception e) {
-            e.printStackTrace();
-         }
+          try {
+             while (ois.readUTF() != null) {
+                String message = "";
+
+                try {
+                   jtaMessages.append(message + "\n");
+                } catch (Exception e) {
+                   e.printStackTrace();
+                }
+             }
+          }catch(IOException ioe){
+
+          }
       }
    }
 } 
