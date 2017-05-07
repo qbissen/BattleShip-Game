@@ -85,7 +85,7 @@ public class GuiMain extends JFrame{
                 greenName = (String) JOptionPane.showInputDialog(pane,"Enter player two's name:","Green Player Name",JOptionPane.QUESTION_MESSAGE, smallGreen,null,null);
             }
 
-            IP_ADDR = (String) JOptionPane.showInputDialog(pane, "Enter the IP Address of the server", JOptionPane.QUESTION_MESSAGE );
+            //IP_ADDR = (String) JOptionPane.showInputDialog(pane, "Enter the IP Address of the server", JOptionPane.QUESTION_MESSAGE );
 //            while(IP_ADDR.isEmpty()){
 //                JOptionPane.showMessageDialog(pane,"Please enter in the server IP Address.", "IP Address Error", JOptionPane.WARNING_MESSAGE);
 //                IP_ADDR = (int) JOptionPane.showInputDialog(pane, "Enter the server IP Address", JOptionPane.QUESTION_MESSAGE);

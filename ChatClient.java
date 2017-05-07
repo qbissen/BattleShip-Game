@@ -13,7 +13,7 @@ public class ChatClient extends JPanel
    private BufferedReader brInput;
    private PrintWriter pwOutput;
    private ObjectOutputStream oos;
-   ObjectInputStream ois;
+   private ObjectInputStream ois;
 
    public ChatClient(String _hostName) {
       setLayout(new BorderLayout());
@@ -84,9 +84,7 @@ public class ChatClient extends JPanel
       public void run() {
          String message = "";
          try {
-            while((message = ois.readUTF()) != null) {
                jtaMessages.append(message + "\n");
-            } 
             }
          catch(Exception e) {
             e.printStackTrace();
