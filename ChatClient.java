@@ -82,12 +82,14 @@ public class ChatClient extends JPanel
       public void run() {
           try {
              while (ois.readUTF() != null) {
-                String message = "";
-
-                try {
-                   jtaMessages.append(message + "\n");
-                } catch (Exception e) {
-                   e.printStackTrace();
+                String command = ois.readUTF();
+                if(command == "CHAT") {
+                   try {
+                      String message = ois.readUTF();
+                      jtaMessages.append(message + "\n");
+                   } catch (Exception e) {
+                      e.printStackTrace();
+                   }
                 }
              }
           }catch(IOException ioe){
