@@ -12,22 +12,24 @@ import java.util.ArrayList;
 /**
  * Created by Quinn on 4/7/2017.
  */
-public class H7Client extends Thread implements ActionListener{
+public class H7Client implements ActionListener {
 
     private JTextField jtfPortName = new JTextField(20);
     private JTextField jtfHostName = new JTextField(20);
     private String hostName;
     private int portNumber;
-    private ArrayList<String> clientMessage = new ArrayList();
-    private JTextArea jtaChat = new JTextArea("Send a message to the client", 15,40);
-    private JTextArea jtaRecive = new JTextArea("WELCOME TO THE CHAT!", 15,40);
+
+    private JTextArea jtaChat = new JTextArea("Send a message to the client", 15, 40);
+    private JTextArea jtaRecive = new JTextArea("WELCOME TO THE CHAT!", 15, 40);
+    private JTextField jtfUName = new JTextField("user");
 
 
-    public H7Client(){
+    public H7Client() {
         JFrame defaultFrame = new JFrame();
 
         JLabel jlPortName = new JLabel("Enter The Port number");
         JLabel jlHostName = new JLabel("Enter the Host name");
+        JLabel jlUName = new JLabel("Enter a username");
 
         JButton jbSetSocketInfo = new JButton("Confirm Port and Host Info");
         JButton jbExit = new JButton("Exit");
@@ -38,116 +40,131 @@ public class H7Client extends Thread implements ActionListener{
         jbSendText.addActionListener(this);
 
 
-
         JPanel jpNorth = new JPanel();
         JPanel jpCenter = new JPanel();
         JPanel jpLabels = new JPanel();
 
-        defaultFrame.add(jpNorth,BorderLayout.NORTH);
-        jpNorth.add(jbSetSocketInfo,BorderLayout.EAST);
+        defaultFrame.add(jpNorth, BorderLayout.NORTH);
+        jpNorth.add(jbSetSocketInfo, BorderLayout.EAST);
         jpNorth.add(jbSendText, BorderLayout.CENTER);
-        jpNorth.add(jbExit,BorderLayout.WEST);
+        jpNorth.add(jbExit, BorderLayout.WEST);
 
 
-        defaultFrame.add(jpCenter,BorderLayout.CENTER);
-        jpCenter.add(jtaChat,BorderLayout.SOUTH);
-        jpCenter.add(jpLabels,BorderLayout.NORTH);
+        defaultFrame.add(jpCenter, BorderLayout.CENTER);
+        jpCenter.add(jtaChat, BorderLayout.SOUTH);
+        jpCenter.add(jpLabels, BorderLayout.NORTH);
 
-        jpLabels.setLayout(new GridLayout(2,2));
+        jpLabels.setLayout(new GridLayout(2, 3));
         jpLabels.add(jlHostName);
         jpLabels.add(jlPortName);
+        jpLabels.add(jlUName);
         jpLabels.add(jtfHostName);
         jpLabels.add(jtfPortName);
+        jpLabels.add(jtfUName);
 
-        defaultFrame.add(jtaRecive,BorderLayout.SOUTH);
+        defaultFrame.add(jtaRecive, BorderLayout.SOUTH);
 
         defaultFrame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
 
 
         defaultFrame.setLocationRelativeTo(null);
-        defaultFrame.setSize(800,800);
+        defaultFrame.setSize(800, 800);
         defaultFrame.setVisible(true);
 
     }
 
-
-    public void setClientComms(String message){
+    public synchronized void setClientComms(String message) {
         try {
             // open communications to the server
-            Socket s = new Socket( hostName, portNumber );
-
-            // open input stream
-            InputStream in = s.getInputStream();
-            BufferedReader br = new BufferedReader(
-                    new InputStreamReader(in));
-
-            // open output stream
-            OutputStream out = s.getOutputStream();
-            PrintWriter pout = new PrintWriter(
-                    new OutputStreamWriter( out ));
-
-
-                // write something to the server
-                pout.println( message );
-
-                // make sure it went
-                pout.flush();
-
-                // read something back from server
-                String msg = br.readLine();
-
-                // print the something to the user
-                System.out.println( "Message: "+ msg );
-                //jtaChat.setText("");
-                jtaRecive.append("\n" + msg);
-
-
-            // Send the terminating string to the server
-            pout.println("quit");
-            pout.flush();
-
-            // close everything
-            pout.close();
-            br.close();
-            s.close();
-        }
-        catch(UnknownHostException uhe){
-            System.out.println("What host you speak of?");
-        }
-        catch(IOException ioe){
-            System.out.println("Bad IO?");
-            ioe.printStackTrace();
+            Socket s = new Socket(hostName, portNumber);
+            SendThread ct = new SendThread(s, message);
+            ct.start();
+        } catch (IOException e) {
+            e.printStackTrace();
         }
     }
 
-    public void actionPerformed(ActionEvent event){
-        if(event.getActionCommand().equals("Exit")){
-            System.exit(0);
-        }
-        else if(event.getActionCommand().equals("Send")){
-            String chatMessage = jtaChat.getText();
-            jtaChat.setText("");
-            setClientComms(chatMessage);
+    class ReceiveThread extends Thread {
 
+        private BufferedReader s;
 
-
-        }
-        else if(event.getActionCommand().equals("Confirm Port and Host Info")){
-            hostName = jtfHostName.getText();
-            //NEED TO ADD IN WAY TO HANDLE IP ADDRESSES
-            portNumber = Integer.parseInt(jtfPortName.getText());
+        public ReceiveThread(Socket sock) throws IOException {
+            s = new BufferedReader(new InputStreamReader(sock.getInputStream()));
         }
 
+        public void run() {
+            while (true) {
+                try {
+                    String message = s.readLine();
+
+                    jtaRecive.append("\n" + message);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
     }
 
+    class SendThread extends Thread {
 
-    public static void main(String [] args) {
+        Socket s;
+        String msg;
 
-        new H7Client();
+        public SendThread(Socket sock, String _msg) {
+            s = sock;
+            msg = _msg;
+        }
+
+        public void run() {
+                try {
+
+                    // open output stream
+                    PrintWriter pout = new PrintWriter(
+                            new OutputStreamWriter(s.getOutputStream()));
 
 
+                    // write something to the server
+                    pout.println(msg);
+
+                    // make sure it went
+                    pout.flush();
+                    pout.close();
+
+                } catch (UnknownHostException uhe) {
+                    System.out.println("What host you speak of?");
+                } catch (IOException ioe) {
+                    System.out.println("Bad IO?");
+                    ioe.printStackTrace();
+                }
+        }
+    }
+        public void actionPerformed(ActionEvent event) {
+            if (event.getActionCommand().equals("Exit")) {
+                System.exit(0);
+            } else if (event.getActionCommand().equals("Send")) {
+                String chatMessage = jtaChat.getText();
+                jtaChat.setText("");
+                setClientComms(chatMessage);
+
+
+            } else if (event.getActionCommand().equals("Confirm Port and Host Info")) {
+                hostName = jtfHostName.getText();
+                //NEED TO ADD IN WAY TO HANDLE IP ADDRESSES
+                portNumber = Integer.parseInt(jtfPortName.getText());
+                try {
+                    Socket s = new Socket(hostName, portNumber);
+                    ReceiveThread rc = new ReceiveThread(s);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+
+
+        public static void main(String[] args) {
+
+            new H7Client();
+
+        }
     }
 
-
-
-}
