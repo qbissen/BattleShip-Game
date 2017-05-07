@@ -114,6 +114,8 @@ public class Server extends JFrame implements ActionListener{
         Socket sock;
 //        BufferedReader br;
         ObjectInputStream obr;
+        ObjectOutputStream oos;
+
 
 //        private InetAddress address = sock.getInetAddress();
 //        private String netAdress = address.getHostAddress();
@@ -125,6 +127,7 @@ public class Server extends JFrame implements ActionListener{
             try{
 //                br = new BufferedReader(new InputStreamReader(sock.getInputStream()));
                 obr = new ObjectInputStream(sock.getInputStream());
+                oos = new ObjectOutputStream(sock.getOutputStream());
             }
             catch(IOException e){
                 e.printStackTrace();
@@ -142,8 +145,10 @@ public class Server extends JFrame implements ActionListener{
 
                     //If a message is being sent from the chat
                     if(command == "CHAT"){
-                        String username = obr.readUTF();
+//                        String username = obr.readUTF();
+                        String username = "user";
                         String message = obr.readUTF();
+                        System.out.println(message);
                         sendMessage(message, username);
                         uName = username;
                     }
@@ -190,10 +195,8 @@ public class Server extends JFrame implements ActionListener{
         public synchronized void declareWinner(String player){
             try{
                 for(Socket s: clients){
-                    PrintWriter pw = new PrintWriter(new OutputStreamWriter(s.getOutputStream()));
-                    pw.println(player);
-                    pw.flush();
-                    pw.close();
+                    oos.writeUTF(player);
+                    oos.flush();
                 }
             }
             catch(IOException e){
@@ -204,10 +207,8 @@ public class Server extends JFrame implements ActionListener{
         public synchronized void doStartGame(){
             try{
                 for(Socket s: clients){
-                    ObjectOutputStream oos = new ObjectOutputStream(s.getOutputStream());
                     oos.writeDouble(1 + (int)(Math.random() * 2));
                     oos.flush();
-                    oos.close();
                 }
             }
             catch(IOException e){
@@ -218,14 +219,12 @@ public class Server extends JFrame implements ActionListener{
         public synchronized void sendMessage(String msg, String username){
             try{
                 for(Socket s: clients){
-                    PrintWriter pw = new PrintWriter(new OutputStreamWriter(s.getOutputStream()));
-                    pw.println("MESSAGE");
-                    pw.flush();
-                    pw.println(username);
-                    pw.flush();
-                    pw.println(msg);
-                    pw.flush();
-                    pw.close();
+                    oos.writeUTF("MESSAGE");
+                    oos.flush();
+                    oos.writeUTF(username);
+                    oos.flush();
+                    oos.writeUTF(msg);
+                    oos.flush();
                 }
             }
             catch(IOException e){
@@ -236,14 +235,12 @@ public class Server extends JFrame implements ActionListener{
         public synchronized void sendSpectatorMessage(String msg, String username){
             try{
                 for(Socket s: clients){
-                    PrintWriter pw = new PrintWriter(new OutputStreamWriter(s.getOutputStream()));
-                    pw.println("SPECTATOR-MESSAGE");
-                    pw.flush();
-                    pw.println(username);
-                    pw.flush();
-                    pw.println(msg);
-                    pw.flush();
-                    pw.close();
+                    oos.writeUTF("SPECTATOR-MESSAGE");
+                    oos.flush();
+                    oos.writeUTF(username);
+                    oos.flush();
+                    oos.writeUTF(msg);
+                    oos.flush();
                 }
             }
             catch(IOException e){
@@ -254,17 +251,13 @@ public class Server extends JFrame implements ActionListener{
         public synchronized void sendButtonNumber(int row, int column, String s){
             try{
                 for(Socket so: clients) {
-                    PrintWriter pw = new PrintWriter(new OutputStreamWriter(so.getOutputStream()));
-                    pw.println("DATA");
-                    pw.flush();
-                    pw.println(s);
-                    pw.flush();
-                    pw.close();
-                    ObjectOutputStream oos = new ObjectOutputStream(so.getOutputStream());
+                    oos.writeUTF("DATA");
+                    oos.flush();
+                    oos.writeUTF(s);
+                    oos.flush();
                     oos.writeInt(row);
                     oos.flush();
                     oos.writeInt(column);
-                    oos.close();
                 }
             }
             catch(IOException e){
@@ -275,16 +268,12 @@ public class Server extends JFrame implements ActionListener{
         public synchronized void sendResult(Boolean b, String s){
             try{
                 for(Socket so: clients) {
-                    PrintWriter pw = new PrintWriter(new OutputStreamWriter(so.getOutputStream()));
-                    pw.println("RESULT");
-                    pw.flush();
-                    pw.println(s);
-                    pw.flush();
-                    pw.close();
-                    ObjectOutputStream oos = new ObjectOutputStream(so.getOutputStream());
+                    oos.writeUTF("RESULT");
+                    oos.flush();
+                    oos.writeUTF(s);
+                    oos.flush();
                     oos.writeBoolean(b);
                     oos.flush();
-                    oos.close();
                 }
             }
             catch(IOException e){
