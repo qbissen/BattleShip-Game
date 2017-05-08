@@ -97,7 +97,9 @@ public class ChatClient extends JPanel{
        }
        jtfSendMessage.setText("");
    }
-   public class ThreadedServer{
-       
+   public class ThreadedServer implements Runnable{
+       public void run(){
+
+       }
    }
 }
