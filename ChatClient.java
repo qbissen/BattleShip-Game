@@ -8,7 +8,7 @@ import java.io.ObjectOutputStream;
 import java.net.Socket;
 
 
-public class ChatClient extends JPanel{
+public class ChatClient extends JPanel implements Runnable{
    final int PORT = 16789;
    private JTextArea jtaMessages;
    private JTextField jtfSendMessage;
@@ -62,8 +62,8 @@ public class ChatClient extends JPanel{
       System.out.println("Just before createStreams");
 
 
-          readMessage();
-
+       Thread cc = new Thread(this);//readMessage();
+       cc.start();
    }
    public void createStreams(){
        try {
@@ -78,16 +78,7 @@ public class ChatClient extends JPanel{
 
        }
    }
-   public void readMessage() {
 
-       while (true) {
-           try {
-               jtaMessages.append(ois.readUTF() + " \n");
-           } catch (IOException ioe) {
-
-           }
-       }
-   }
    public void sendMessage(){
        try{
            oout.writeUTF(jtfSendMessage.getText());
@@ -97,9 +88,14 @@ public class ChatClient extends JPanel{
        }
        jtfSendMessage.setText("");
    }
-   public class ThreadedServer implements Runnable{
-       public void run(){
+   public void run(){
+           while (true) {
+               try {
+                   jtaMessages.append(ois.readUTF() + ": " + ois.readUTF() + " \n");
+               } catch (IOException ioe) {
 
+               }
+           }
        }
-   }
+
 }
