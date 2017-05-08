@@ -33,7 +33,7 @@ public class Server extends JFrame implements ActionListener{
     private Border border = BorderFactory.createLineBorder(Color.BLACK);
 
     //ArrayList of Clients
-    private Vector<Socket> clients = new Vector<Socket>();
+    private Vector<ObjectOutputStream> clients = new Vector<ObjectOutputStream>();
 
     public static void main(String[] args){
         new Server();
@@ -62,7 +62,7 @@ public class Server extends JFrame implements ActionListener{
         setLocationRelativeTo(null);
         setSize(500,500);
         setVisible(true);
-        setDefaultCloseOperation(EXIT_ON_CLOSE);
+        setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
 
     }
 
@@ -94,7 +94,6 @@ public class Server extends JFrame implements ActionListener{
             while(true){
                 Socket s = ss.accept();
                 jta.append("Connection from " + s.getInetAddress() + "\n");
-                clients.add(s);
                 ServerThread st = new ServerThread(s);
                 st.start();
             }
@@ -127,6 +126,7 @@ public class Server extends JFrame implements ActionListener{
             try{
 //                br = new BufferedReader(new InputStreamReader(sock.getInputStream()));
                 oos = new ObjectOutputStream(sock.getOutputStream());
+                clients.add(oos);
                 ois = new ObjectInputStream(sock.getInputStream());
             }
             catch(IOException e){
@@ -142,6 +142,7 @@ public class Server extends JFrame implements ActionListener{
                 while(true){
                     //read in the first line to determine what type of information is being sent in
                     String command = ois.readUTF();
+                    System.out.println(command);
 
                     //If a message is being sent from the chat
                     if(command == "CHAT"){
@@ -195,9 +196,9 @@ public class Server extends JFrame implements ActionListener{
 
         public synchronized void declareWinner(String player){
             try{
-                for(Socket s: clients){
-                    oos.writeUTF(player);
-                    oos.flush();
+                for(ObjectOutputStream o: clients){
+                    o.writeUTF(player);
+                    o.flush();
                 }
             }
             catch(IOException e){
@@ -207,9 +208,9 @@ public class Server extends JFrame implements ActionListener{
 
         public synchronized void doStartGame(){
             try{
-                for(Socket s: clients){
-                    oos.writeDouble(1 + (int)(Math.random() * 2));
-                    oos.flush();
+                for(ObjectOutputStream o: clients){
+                    o.writeDouble(1 + (int)(Math.random() * 2));
+                    o.flush();
                 }
             }
             catch(IOException e){
@@ -217,15 +218,16 @@ public class Server extends JFrame implements ActionListener{
             }
         }
 
-        public synchronized void sendMessage(String msg, String username){
+        public synchronized void sendMessage(String username, String msg){
             try{
-                for(Socket s: clients){
-                    oos.writeUTF("CHAT");
-                    oos.flush();
-                    oos.writeUTF(username);
-                    oos.flush();
-                    oos.writeUTF(msg);
-                    oos.flush();
+                System.out.println("got to sendMessage method");
+                for(ObjectOutputStream o: clients){
+                    o.writeUTF("CHAT");
+                    o.flush();
+                    o.writeUTF(username);
+                    o.flush();
+                    o.writeUTF(msg);
+                    o.flush();
                 }
             }
             catch(IOException e){
@@ -235,13 +237,14 @@ public class Server extends JFrame implements ActionListener{
 
         public synchronized void sendSpectatorMessage(String msg, String username){
             try{
-                for(Socket s: clients){
-                    oos.writeUTF("SPECTATOR-MESSAGE");
-                    oos.flush();
-                    oos.writeUTF(username);
-                    oos.flush();
-                    oos.writeUTF(msg);
-                    oos.flush();
+                for(ObjectOutputStream o: clients){
+
+                    o.writeUTF("SPECTATOR-MESSAGE");
+                    o.flush();
+                    o.writeUTF(username);
+                    o.flush();
+                    o.writeUTF(msg);
+                    o.flush();
                 }
             }
             catch(IOException e){
@@ -251,14 +254,14 @@ public class Server extends JFrame implements ActionListener{
 
         public synchronized void sendButtonNumber(int row, int column, String s){
             try{
-                for(Socket so: clients) {
-                    oos.writeUTF("DATA");
-                    oos.flush();
-                    oos.writeUTF(s);
-                    oos.flush();
-                    oos.writeInt(row);
-                    oos.flush();
-                    oos.writeInt(column);
+                for(ObjectOutputStream o: clients) {
+                    o.writeUTF("DATA");
+                    o.flush();
+                    o.writeUTF(s);
+                    o.flush();
+                    o.writeInt(row);
+                    o.flush();
+                    o.writeInt(column);
                 }
             }
             catch(IOException e){
@@ -268,13 +271,13 @@ public class Server extends JFrame implements ActionListener{
 
         public synchronized void sendResult(Boolean b, String s){
             try{
-                for(Socket so: clients) {
-                    oos.writeUTF("RESULT");
-                    oos.flush();
-                    oos.writeUTF(s);
-                    oos.flush();
-                    oos.writeBoolean(b);
-                    oos.flush();
+                for(ObjectOutputStream o: clients) {
+                    o.writeUTF("RESULT");
+                    o.flush();
+                    o.writeUTF(s);
+                    o.flush();
+                    o.writeBoolean(b);
+                    o.flush();
                 }
             }
             catch(IOException e){
