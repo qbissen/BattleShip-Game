@@ -93,7 +93,7 @@ public class Server extends JFrame implements ActionListener{
             ss = new ServerSocket(16789);
             while(true){
                 Socket s = ss.accept();
-                jta.append("Connection from " + s.getInetAddress());
+                jta.append("Connection from " + s.getInetAddress() + "\n");
                 clients.add(s);
                 ServerThread st = new ServerThread(s);
                 st.start();
@@ -113,7 +113,7 @@ public class Server extends JFrame implements ActionListener{
     class ServerThread extends Thread{
         Socket sock;
 //        BufferedReader br;
-        ObjectInputStream obr;
+        ObjectInputStream ois;
         ObjectOutputStream oos;
 
 
@@ -126,8 +126,8 @@ public class Server extends JFrame implements ActionListener{
             sock = _s;
             try{
 //                br = new BufferedReader(new InputStreamReader(sock.getInputStream()));
-                obr = new ObjectInputStream(sock.getInputStream());
                 oos = new ObjectOutputStream(sock.getOutputStream());
+                ois = new ObjectInputStream(sock.getInputStream());
             }
             catch(IOException e){
                 e.printStackTrace();
@@ -141,51 +141,52 @@ public class Server extends JFrame implements ActionListener{
 
                 while(true){
                     //read in the first line to determine what type of information is being sent in
-                    String command = obr.readUTF();
+                    String command = ois.readUTF();
 
                     //If a message is being sent from the chat
                     if(command == "CHAT"){
-//                        String username = obr.readUTF();
+//                        String username = ois.readUTF();
                         String username = "user";
-                        String message = obr.readUTF();
+                        String message = ois.readUTF();
                         System.out.println(message);
                         sendMessage(message, username);
                         uName = username;
                     }
                     else if(command == "SPECTATOR-CHAT"){
-                        String username = obr.readUTF();
-                        String message = obr.readUTF();
+                        String username = ois.readUTF();
+                        String message = ois.readUTF();
                         sendSpectatorMessage(message, username);
                         uName = username;
                     }
                     else if(command == "DATA"){
-                        String player = obr.readUTF();
-                        int row = obr.readInt();
-                        int column = obr.readInt();
+                        String player = ois.readUTF();
+                        int row = ois.readInt();
+                        int column = ois.readInt();
                         sendButtonNumber(row, column, player);
                     }
                     else if(command == "RESULT"){
-                        String player = obr.readUTF();;
-                        boolean isHit = obr.readBoolean();
+                        String player = ois.readUTF();;
+                        boolean isHit = ois.readBoolean();
                         sendResult(isHit, player);
                     }
                     else if(command == "DECLARE-WINNER"){
-                        String player = obr.readUTF();
+                        String player = ois.readUTF();
                         declareWinner(player);
                     }
+
                 }
             }
             catch(SocketException e){
-                e.printStackTrace();
-            }
-            catch(UnknownHostException e){
                 try {
+                    oos.close();
+                    ois.close();
                     sock.close();
-                    jta.append(uName + " disconnected");
+                    jta.append(uName + " disconnected\n");
                 }
                 catch(IOException ioe){
                     ioe.printStackTrace();
                 }
+
             }
             catch(IOException e){
                 e.printStackTrace();
@@ -219,7 +220,7 @@ public class Server extends JFrame implements ActionListener{
         public synchronized void sendMessage(String msg, String username){
             try{
                 for(Socket s: clients){
-                    oos.writeUTF("MESSAGE");
+                    oos.writeUTF("CHAT");
                     oos.flush();
                     oos.writeUTF(username);
                     oos.flush();
