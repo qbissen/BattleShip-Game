@@ -81,6 +81,7 @@ public class ChatClient extends JPanel implements Runnable{
 
    public void sendMessage(){
        try{
+           oout.writeUTF("CHAT");
            oout.writeUTF(jtfSendMessage.getText());
            oout.flush();
        }catch(IOException ioe){
@@ -90,7 +91,10 @@ public class ChatClient extends JPanel implements Runnable{
    }
    public void run(){
            while (true) {
+
                try {
+                   String mes = ois.readUTF();
+                   System.out.println(mes);
                    jtaMessages.append(ois.readUTF() + ": " + ois.readUTF() + " \n");
                } catch (IOException ioe) {
 
