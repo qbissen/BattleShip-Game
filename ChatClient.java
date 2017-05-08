@@ -64,7 +64,7 @@ public class ChatClient extends JPanel
    public class SendButtonListener implements ActionListener {
       public void actionPerformed(ActionEvent evt) {
          String data = jtfSendMessage.getText();
-         if(data != null && !data.isEmpty()) {
+         if(data != null) {
             try {
                oos.writeUTF("CHAT");
                oos.writeUTF(data);
@@ -85,8 +85,9 @@ public class ChatClient extends JPanel
                 String command = ois.readUTF();
                 if(command == "CHAT") {
                    try {
+                      String uName = ois.readUTF();
                       String message = ois.readUTF();
-                      jtaMessages.append(message + "\n");
+                      jtaMessages.append(uName + ": " + message + "\n");
                    } catch (Exception e) {
                       e.printStackTrace();
                    }
