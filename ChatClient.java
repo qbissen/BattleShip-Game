@@ -90,19 +90,17 @@ public class ChatClient extends JPanel implements Runnable{
        jtfSendMessage.setText("");
    }
    public void run(){
-           while (true) {
+   String mes = "";
+   try {
+           while ((mes = ois.readUTF())!=null ) {
 
-               try {
-
-                   System.out.println("At top of loop");
-                   String mes =
-                           ois.readUTF();
-                   System.out.println(mes);
-                   jtaMessages.append(ois.readUTF() + ": " + ois.readUTF() + " \n");
+                     System.out.println(mes);
+                   jtaMessages.append( ": " + mes + " \n");
+                   }
                } catch (IOException ioe) {
-                    System.out.println("IO Exception in run" + ioe);
+
                }
            }
        }
 
-}
+
