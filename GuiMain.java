@@ -38,16 +38,9 @@ public class GuiMain extends JFrame{
     private JButton button1;
 
     public static void main(String []args){
-        if( args.length == 1){
-            IP_ADDR = args[0];
-            new GuiMain();
-        }
-        else
-        {
-            System.out.println("No IP address on command line, using localhost.");
-            System.out.println("Usage: java ChatClient <ChatServerIPAddress>");
-            IP_ADDR = "localhost";
-        }
+     
+       new GuiMain();
+        
     }
     private BattleshipLogic logicClass = new BattleshipLogic();
     /*
@@ -71,25 +64,14 @@ public class GuiMain extends JFrame{
                     "hit your own ships! Have fun and we hope that you enjoy the game.");
             JFrame pane = new JFrame();
             //Prompt for orange name
-            orangeName = (String) JOptionPane.showInputDialog(pane,"Enter player one's name:","Orange Player's Name",JOptionPane.QUESTION_MESSAGE, smallOrange,null,null);
+            orangeName = (String) JOptionPane.showInputDialog(pane,"Enter your user name.","Orange Player's Name",JOptionPane.QUESTION_MESSAGE, smallOrange,null,null);
             while(orangeName.isEmpty())
             {
-                JOptionPane.showMessageDialog(pane,"Please enter a name for Player one!","Orange Player Error",JOptionPane.WARNING_MESSAGE);
-                orangeName = (String) JOptionPane.showInputDialog(pane,"Enter player one's name:","Orange Player's Name",JOptionPane.QUESTION_MESSAGE, smallOrange,null,null);
+                JOptionPane.showMessageDialog(pane,"Please enter a user name!","Orange Player Error",JOptionPane.WARNING_MESSAGE);
+                orangeName = (String) JOptionPane.showInputDialog(pane,"Enter a user name.","Orange Player's Name",JOptionPane.QUESTION_MESSAGE, smallOrange,null,null);
             }
-            //Prompt for green name
-            greenName = (String) JOptionPane.showInputDialog(pane,"Enter player two's name:","Green Player Name",JOptionPane.QUESTION_MESSAGE, smallGreen,null,null);
-            while(greenName.isEmpty())
-            {
-                JOptionPane.showMessageDialog(pane,"Please enter a name for Player two!","Green Player Error",JOptionPane.WARNING_MESSAGE);
-                greenName = (String) JOptionPane.showInputDialog(pane,"Enter player two's name:","Green Player Name",JOptionPane.QUESTION_MESSAGE, smallGreen,null,null);
-            }
-
             IP_ADDR = (String) JOptionPane.showInputDialog(pane, "Enter the IP Address of the server", JOptionPane.QUESTION_MESSAGE );
-//            while(IP_ADDR.isEmpty()){
-//                JOptionPane.showMessageDialog(pane,"Please enter in the server IP Address.", "IP Address Error", JOptionPane.WARNING_MESSAGE);
-//                IP_ADDR = (int) JOptionPane.showInputDialog(pane, "Enter the server IP Address", JOptionPane.QUESTION_MESSAGE);
-//            }
+
             buildGameBoard();
             randomizeTurn();
         }
