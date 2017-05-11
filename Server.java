@@ -115,6 +115,7 @@ public class Server extends JFrame implements ActionListener{
       //        BufferedReader br;
       ObjectOutputStream obs;
       ObjectInputStream ois;
+      ArrayList<String> players = new ArrayList<String>();
    
    //        private InetAddress address = sock.getInetAddress();
    //        private String netAdress = address.getHostAddress();
@@ -129,8 +130,7 @@ public class Server extends JFrame implements ActionListener{
       public void run(){
       
          // 
-         doStartGame();
-                  
+
         
       
          
@@ -159,12 +159,12 @@ public class Server extends JFrame implements ActionListener{
                   uName = username;
                   
                }
-               else if(command.equals("SPECTATOR-CHAT")){
-                  String username = ois.readUTF();
-                  String message = ois.readUTF();
-                  sendSpectatorMessage(message, username);
-                  uName = username;
-               }
+//               else if(command.equals("SPECTATOR-CHAT")){
+//                  String username = ois.readUTF();
+//                  String message = ois.readUTF();
+//                  sendSpectatorMessage(message, username);
+//                  uName = username;
+//               }
                else if(command.equals("DATA")){
                   String player = ois.readUTF();
                   int row = ois.readInt();
@@ -176,11 +176,18 @@ public class Server extends JFrame implements ActionListener{
                   boolean isHit = ois.readBoolean();
                   sendResult(isHit, player);
                }
-               else if(command.equals("DECLARE-WINNER")){
-                  String player = ois.readUTF();
-                  declareWinner(player);
+               else if(command.equals("LOSER")){
+//                  String player = ois.readUTF();
+                   int player = ois.readInt();
+                  sendLoser(player);
                }
-            
+                else if(command.equals("PLAYER")){
+
+                   players.add(ois.readUTF());
+                   if(players.size() == 2) {
+                       doStartGame();
+                   }
+               }
                
             
             
@@ -202,10 +209,11 @@ public class Server extends JFrame implements ActionListener{
             e.printStackTrace();
          }
       }}
-   public void declareWinner(String player){
+   public void sendLoser(int player){
       try{
          for(ObjectOutputStream o: clients){
-            o.writeUTF(player);
+            o.writeUTF("LOSER");
+            o.writeInt(player);
             o.flush();
          }
       }
@@ -214,9 +222,10 @@ public class Server extends JFrame implements ActionListener{
       }
    }
    
-   public synchronized void doStartGame(){
+   public  void doStartGame(){
       try{
          for(ObjectOutputStream o: clients){
+            o.writeUTF("START");
             o.writeDouble(1 + (int)(Math.random() * 2));
             o.flush();
          }
@@ -241,22 +250,22 @@ public class Server extends JFrame implements ActionListener{
       }
    }
    
-   public  void sendSpectatorMessage(String msg, String username){
-      try{
-         for(ObjectOutputStream o: clients){
-            
-            o.writeUTF("SPECTATOR-MESSAGE");
-            o.flush();
-            o.writeUTF(username);
-            o.flush();
-            o.writeUTF(msg);
-            o.flush();
-         }
-      }
-      catch(IOException e){
-         e.printStackTrace();
-      }
-   }
+//   public  void sendSpectatorMessage(String msg, String username){
+//      try{
+//         for(ObjectOutputStream o: clients){
+//
+//            o.writeUTF("SPECTATOR-MESSAGE");
+//            o.flush();
+//            o.writeUTF(username);
+//            o.flush();
+//            o.writeUTF(msg);
+//            o.flush();
+//         }
+//      }
+//      catch(IOException e){
+//         e.printStackTrace();
+//      }
+//   }
    
    public void sendButtonNumber(int row, int column, String s){
       try{

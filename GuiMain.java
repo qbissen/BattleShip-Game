@@ -531,12 +531,37 @@ public class GuiMain extends JFrame{
             jtfSendMessage.setText("");
         }
         public void run(){
-            String mes = "";
+            String command = "";
             try {
-                while ((mes = ois.readUTF())!=null ) {
+                while ((command = ois.readUTF())!=null ) {
 
-                    System.out.println(mes);
-                    jtaMessages.append( ": " + mes + " \n");
+                    if(command == "CHAT") {
+                        String user = ois.readUTF();
+                        String msg = ois.readUTF();
+                        System.out.println(msg);
+                        jtaMessages.append(user + ": " + msg + " \n");
+                    }
+                    else if(command == "DATA"){
+                        String player = ois.readUTF();
+                        int row = ois.readInt();
+                        int column = ois.readInt();
+                    }
+                    else if(command == "RESULT"){
+                        String player = ois.readUTF();
+                        Boolean isHit = ois.readBoolean();
+                    }
+                    else if(command == "START"){
+                        int start = ois.readInt();
+                    }
+                    else if(command == "LOSER"){
+                        int loser = ois.readInt();
+                        if(loser == 1){
+
+                        }
+                        else{
+
+                        }
+                    }
                 }
             }catch (IOException ioe) {
 
