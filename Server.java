@@ -202,7 +202,7 @@ public class Server extends JFrame implements ActionListener{
             e.printStackTrace();
          }
       }}
-   public synchronized void declareWinner(String player){
+   public void declareWinner(String player){
       try{
          for(ObjectOutputStream o: clients){
             o.writeUTF(player);
@@ -241,7 +241,7 @@ public class Server extends JFrame implements ActionListener{
       }
    }
    
-   public synchronized void sendSpectatorMessage(String msg, String username){
+   public  void sendSpectatorMessage(String msg, String username){
       try{
          for(ObjectOutputStream o: clients){
             
@@ -258,7 +258,7 @@ public class Server extends JFrame implements ActionListener{
       }
    }
    
-   public synchronized void sendButtonNumber(int row, int column, String s){
+   public void sendButtonNumber(int row, int column, String s){
       try{
          for(ObjectOutputStream o: clients) {
             o.writeUTF("DATA");
@@ -275,7 +275,7 @@ public class Server extends JFrame implements ActionListener{
       }
    }
    
-   public synchronized void sendResult(Boolean b, String s){
+   public void sendResult(Boolean b, String s){
       try{
          for(ObjectOutputStream o: clients) {
             o.writeUTF("RESULT");
