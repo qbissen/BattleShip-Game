@@ -87,14 +87,18 @@ public class GuiMain extends JFrame{
             }
             IP_ADDR = (String) JOptionPane.showInputDialog(pane, "Enter the IP Address of the server", JOptionPane.QUESTION_MESSAGE );
 
+            String player = (String) JOptionPane.showInputDialog(pane, "Are you a player, Enter either 'true' or 'false'", JOptionPane.QUESTION_MESSAGE);
+            chatClient = new ChatClient(IP_ADDR);
+            chatClient.isPlayer(player);
             buildGameBoard();
-            randomizeTurn();
+            //randomizeTurn();
         }
         catch(Exception nameError)
         {
             System.exit(0);
         }
     }
+
     /*
         *BuildGameBoard constructs the GUI but relies on the createPanels method to build the two grids that hold the fleets.
      */
@@ -127,7 +131,7 @@ public class GuiMain extends JFrame{
         JLabel greenLabel = new JLabel();
         JLabel orangeLabel = new JLabel();
         turnLabel = new JLabel("");
-        chatClient = new ChatClient(IP_ADDR);
+
 
         createPanels();
 
@@ -213,12 +217,7 @@ public class GuiMain extends JFrame{
     /*
         *randomizeTurn randomizes the players turn and sets this equal to turnDirtyBit
      */
-    private void randomizeTurn()
-    {
-        double rand = Math.random();
-        turnDirtyBit = (1+(int)(rand * 2));
-        checkTurn(); //calls method to check the turn bit
-    }
+
     /*
         *checkTurn sets the JLabels to determine what players turn it is.
      */
@@ -546,6 +545,25 @@ public class GuiMain extends JFrame{
 
             }
         }
+        public void sendResult(int _isHit) {
+
+        }
+
+        public void isPlayer(String _isPlayer){
+            if(_isPlayer.equals("true")){
+                try{
+                    System.out.println("Hit isPlayer");
+                    oout.writeUTF("PLAYER");
+                    oout.writeUTF("true");
+                    oout.flush();
+                }catch (IOException ioe){
+
+                }
+            }else{
+                System.out.println("Player == false");
+            }
+        }
+
         public void run(){
             String mes = "";
             int targetRow;
@@ -577,6 +595,11 @@ public class GuiMain extends JFrame{
                     }
                     else if(command.equals("DECLARE-WINNER")){
 
+                    }
+                    else if(command.equals("WHOTURN")){
+                        turnDirtyBit = ois.readInt();
+                        System.out.println(turnDirtyBit);
+                        checkTurn();
                     }
 
 
