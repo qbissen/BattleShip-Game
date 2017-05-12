@@ -50,6 +50,10 @@ public class GuiMain extends JFrame{
     private ObjectOutputStream oout;
     private Socket socket;
 
+    private ChatClient chatClient;
+    private int arrRow;
+    private int arrCol;
+
     public static void main(String []args){
      
        new GuiMain();
@@ -125,7 +129,7 @@ public class GuiMain extends JFrame{
         JLabel greenLabel = new JLabel();
         JLabel orangeLabel = new JLabel();
         turnLabel = new JLabel("");
-        ChatClient chatClient = new ChatClient(IP_ADDR);
+        chatClient = new ChatClient(IP_ADDR);
 
         createPanels();
 
@@ -376,9 +380,10 @@ public class GuiMain extends JFrame{
                 * If there is a 3, there is a hit ship.
                  */
                     changeTurn();
+                    chatClient.sendFireLocation();
                     JButton btn = (JButton) eventTop.getSource();
-                    int arrRow = (int)(btn.getClientProperty("row"));
-                    int arrCol = (int)(btn.getClientProperty("column"));
+                    arrRow = (int)(btn.getClientProperty("row"));
+                    arrCol = (int)(btn.getClientProperty("column"));
                     int arrPos[][] = logicClass.getLogicTopBoard();
                     if(arrPos[arrRow][arrCol]== 0){
                         getThatButton(eventTop);
@@ -420,9 +425,10 @@ public class GuiMain extends JFrame{
             }
             else if(eventBottom.getSource()instanceof JButton){
                 changeTurn();
+                chatClient.sendFireLocation();
                 JButton btn = (JButton) eventBottom.getSource();
-                int arrRow = (int)(btn.getClientProperty("row"));
-                int arrCol = (int)(btn.getClientProperty("column"));
+                arrRow = (int)(btn.getClientProperty("row"));
+                arrCol = (int)(btn.getClientProperty("column"));
                 int arrPos[][] = logicClass.getLogicBottomBoard();
                 if(arrPos[arrRow][arrCol]== 0){
                     getThatButton(eventBottom);
@@ -530,13 +536,28 @@ public class GuiMain extends JFrame{
             }
             jtfSendMessage.setText("");
         }
+        public void sendFireLocation(){
+            try{
+                oout.writeUTF("DATA");
+                oout.writeInt(arrRow);
+                oout.writeInt(arrCol);
+                oout.flush();
+            }catch(IOException ioe){
+
+            }
+        }
         public void run(){
             String mes = "";
+            String fireLoc = "";
             try {
                 while ((mes = ois.readUTF())!=null ) {
 
                     System.out.println(mes);
-                    jtaMessages.append( ": " + mes + " \n");
+                    jtaMessages.append(mes + " \n");
+                }
+                while((fireLoc = Integer.toString(ois.readInt()))!= null){
+                    System.out.println(fireLoc);
+                    jtaMessages.append(fireLoc + " \n");
                 }
             }catch (IOException ioe) {
 
