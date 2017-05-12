@@ -51,8 +51,6 @@ public class GuiMain extends JFrame{
     private Socket socket;
 
     private ChatClient chatClient;
-    private int arrRow;
-    private int arrCol;
 
     public static void main(String []args){
 
@@ -380,11 +378,12 @@ public class GuiMain extends JFrame{
                 * If there is a 3, there is a hit ship.
                  */
                 changeTurn();
-                chatClient.sendFireLocation();
+
                 JButton btn = (JButton) eventTop.getSource();
-                arrRow = (int)(btn.getClientProperty("row"));
-                arrCol = (int)(btn.getClientProperty("column"));
+                int arrRow = (int)(btn.getClientProperty("row"));
+                int arrCol = (int)(btn.getClientProperty("column"));
                 int arrPos[][] = logicClass.getLogicTopBoard();
+                chatClient.sendFireLocation(arrRow,arrCol);
                 if(arrPos[arrRow][arrCol]== 0){
                     getThatButton(eventTop);
                 }
@@ -425,11 +424,12 @@ public class GuiMain extends JFrame{
             }
             else if(eventBottom.getSource()instanceof JButton){
                 changeTurn();
-                chatClient.sendFireLocation();
+
                 JButton btn = (JButton) eventBottom.getSource();
-                arrRow = (int)(btn.getClientProperty("row"));
-                arrCol = (int)(btn.getClientProperty("column"));
+                int arrRow = (int)(btn.getClientProperty("row"));
+                int arrCol = (int)(btn.getClientProperty("column"));
                 int arrPos[][] = logicClass.getLogicBottomBoard();
+                chatClient.sendFireLocation(arrRow,arrCol);
                 if(arrPos[arrRow][arrCol]== 0){
                     getThatButton(eventBottom);
                 }
@@ -536,11 +536,11 @@ public class GuiMain extends JFrame{
             }
             jtfSendMessage.setText("");
         }
-        public void sendFireLocation(){
+        public void sendFireLocation(int _arrRow,int _arrCol){
             try{
                 oout.writeUTF("DATA");
-                oout.writeInt(arrRow);
-                oout.writeInt(arrCol);
+                oout.writeInt(_arrRow);
+                oout.writeInt(_arrCol);
                 oout.flush();
             }catch(IOException ioe){
 
@@ -568,7 +568,9 @@ public class GuiMain extends JFrame{
 
                     }
                     else if(command.equals("DATA")){
-
+                        targetRow = ois.readInt();
+                        targetCol = ois.readInt();
+                        System.out.println(targetRow + " " + targetCol);
                     }
                     else if(command.equals("RESULT")) {
 

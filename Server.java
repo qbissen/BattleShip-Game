@@ -166,9 +166,12 @@ public class Server extends JFrame implements ActionListener{
                   uName = username;
                }
                else if(command.equals("DATA")){
-                  String player = ois.readUTF();
+                  //String player = ois.readUTF();
+                  String player = "";
                   int row = ois.readInt();
                   int column = ois.readInt();
+                  System.out.println(row);
+                  System.out.println(column);
                   sendButtonNumber(row, column, player);
                }
                else if(command.equals("RESULT")){
@@ -262,12 +265,12 @@ public class Server extends JFrame implements ActionListener{
       try{
          for(ObjectOutputStream o: clients) {
             o.writeUTF("DATA");
-            o.flush();
-            o.writeUTF(s);
-            o.flush();
+            //o.writeUTF(s);
+            //o.flush();
             o.writeInt(row);
-            o.flush();
+            //o.flush();
             o.writeInt(column);
+            o.flush();
          }
       }
       catch(IOException e){
