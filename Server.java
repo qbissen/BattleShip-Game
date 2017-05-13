@@ -35,6 +35,8 @@ public class Server extends JFrame implements ActionListener{
    //ArrayList of Clients
    private Vector<ObjectOutputStream> clients = new Vector<ObjectOutputStream>();
 
+   private int numberOfPlayers = 0;
+
    public static void main(String[] args){
       new Server();
    }
@@ -79,6 +81,16 @@ public class Server extends JFrame implements ActionListener{
       }
    }
 
+   private void randomizeTurn()
+   {
+      double rand = Math.random();
+      int turnDirtyBit = (1+(int)(rand * 2));
+      System.out.println("hit randomize turn");
+      sendRandomizeTurn(turnDirtyBit);
+   }
+
+
+
    public void doStart(){
    
       jbStart.setEnabled(false);
@@ -95,8 +107,20 @@ public class Server extends JFrame implements ActionListener{
          while(true){
             Socket s = ss.accept();
             jta.append("Connection from " + s.getInetAddress() + "\n");
+
+
             ServerThread st = new ServerThread(s);
+            st.setName(String.valueOf(s.getInetAddress()));
             st.start();
+            if(numberOfPlayers == 1){
+               sendDirtBitPlayerOne(1);
+            }
+            else if(numberOfPlayers == 2){
+               sendDirtyBitPlayerTwo(2);
+            }
+            else {
+               System.out.println("More than two players?????");
+            }
          }
       
       }
@@ -106,6 +130,7 @@ public class Server extends JFrame implements ActionListener{
       catch(IOException e){
          e.printStackTrace();
       }
+
    }
 
 
@@ -115,7 +140,6 @@ public class Server extends JFrame implements ActionListener{
       //        BufferedReader br;
       ObjectOutputStream obs;
       ObjectInputStream ois;
-      ArrayList<String> players = new ArrayList<String>();
    
    //        private InetAddress address = sock.getInetAddress();
    //        private String netAdress = address.getHostAddress();
@@ -128,12 +152,9 @@ public class Server extends JFrame implements ActionListener{
       }
    
       public void run(){
-      
-         // 
 
-        
-      
-         
+         //doStartGame();
+
          String clientMsg;
          String shift = "";
          try {
@@ -159,36 +180,45 @@ public class Server extends JFrame implements ActionListener{
                   uName = username;
                   
                }
-//               else if(command.equals("SPECTATOR-CHAT")){
-//                  String username = ois.readUTF();
-//                  String message = ois.readUTF();
-//                  sendSpectatorMessage(message, username);
-//                  uName = username;
-//               }
+               else if(command.equals("SPECTATOR-CHAT")){
+                  String username = ois.readUTF();
+                  String message = ois.readUTF();
+                  sendSpectatorMessage(message, username);
+                  uName = username;
+               }
                else if(command.equals("DATA")){
-                  String player = ois.readUTF();
+                  //String player = ois.readUTF();
+                  String player = "";
                   int row = ois.readInt();
                   int column = ois.readInt();
+                  System.out.println(row);
+                  System.out.println(column);
                   sendButtonNumber(row, column, player);
                }
                else if(command.equals("RESULT")){
-                  String player = ois.readUTF();;
+                  String player = ois.readUTF();
                   boolean isHit = ois.readBoolean();
                   sendResult(isHit, player);
                }
-               else if(command.equals("LOSER")){
-//                  String player = ois.readUTF();
-                   int player = ois.readInt();
-                  sendLoser(player);
+               else if(command.equals("DECLARE-WINNER")){
+                  String player = ois.readUTF();
+                  declareWinner(player);
                }
-                else if(command.equals("PLAYER")){
+            
+               else if(command.equals("PLAYER")){
 
-                   players.add(ois.readUTF());
-                   if(players.size() == 2) {
-                       doStartGame();
-                   }
+                  String isPlayer = ois.readUTF();
+                  System.out.println(isPlayer);
+                  if(isPlayer.equals("true")){
+                     System.out.println("just before numberOfPlayers");
+                     numberOfPlayers = numberOfPlayers + 1;
+                     System.out.println(numberOfPlayers);
+                     if(numberOfPlayers == 2){
+                        System.out.println("got inside of numberOfPlayers for loop");
+                        randomizeTurn();
+                     }
+                  }
                }
-               
             
             
             }
@@ -209,11 +239,10 @@ public class Server extends JFrame implements ActionListener{
             e.printStackTrace();
          }
       }}
-   public void sendLoser(int player){
+   public synchronized void declareWinner(String player){
       try{
          for(ObjectOutputStream o: clients){
-            o.writeUTF("LOSER");
-            o.writeInt(player);
+            o.writeUTF(player);
             o.flush();
          }
       }
@@ -222,10 +251,9 @@ public class Server extends JFrame implements ActionListener{
       }
    }
    
-   public  void doStartGame(){
+   public synchronized void doStartGame(){
       try{
          for(ObjectOutputStream o: clients){
-            o.writeUTF("START");
             o.writeDouble(1 + (int)(Math.random() * 2));
             o.flush();
          }
@@ -250,33 +278,16 @@ public class Server extends JFrame implements ActionListener{
       }
    }
    
-//   public  void sendSpectatorMessage(String msg, String username){
-//      try{
-//         for(ObjectOutputStream o: clients){
-//
-//            o.writeUTF("SPECTATOR-MESSAGE");
-//            o.flush();
-//            o.writeUTF(username);
-//            o.flush();
-//            o.writeUTF(msg);
-//            o.flush();
-//         }
-//      }
-//      catch(IOException e){
-//         e.printStackTrace();
-//      }
-//   }
-   
-   public void sendButtonNumber(int row, int column, String s){
+   public synchronized void sendSpectatorMessage(String msg, String username){
       try{
-         for(ObjectOutputStream o: clients) {
-            o.writeUTF("DATA");
+         for(ObjectOutputStream o: clients){
+            
+            o.writeUTF("SPECTATOR-MESSAGE");
             o.flush();
-            o.writeUTF(s);
+            o.writeUTF(username);
             o.flush();
-            o.writeInt(row);
+            o.writeUTF(msg);
             o.flush();
-            o.writeInt(column);
          }
       }
       catch(IOException e){
@@ -284,7 +295,24 @@ public class Server extends JFrame implements ActionListener{
       }
    }
    
-   public void sendResult(Boolean b, String s){
+   public synchronized void sendButtonNumber(int row, int column, String s){
+      try{
+         for(ObjectOutputStream o: clients) {
+            o.writeUTF("DATA");
+            //o.writeUTF(s);
+            //o.flush();
+            o.writeInt(row);
+            //o.flush();
+            o.writeInt(column);
+            o.flush();
+         }
+      }
+      catch(IOException e){
+         e.printStackTrace();
+      }
+   }
+   
+   public synchronized void sendResult(Boolean b, String s){
       try{
          for(ObjectOutputStream o: clients) {
             o.writeUTF("RESULT");
@@ -297,6 +325,43 @@ public class Server extends JFrame implements ActionListener{
       }
       catch(IOException e){
          e.printStackTrace();
+      }
+   }
+
+   public void sendDirtBitPlayerOne(int _dirtyBit){
+      try{
+         for(ObjectOutputStream o: clients) {
+            o.writeUTF("START");
+            o.writeInt(_dirtyBit);
+            o.flush();
+         }
+      }catch (IOException ioe){
+
+      }
+   }
+
+   public void sendDirtyBitPlayerTwo(int _dirtyBit){
+      try{
+         for(ObjectOutputStream o: clients) {
+            o.writeUTF("START");
+            o.writeInt(_dirtyBit);
+            o.flush();
+         }
+      }catch (IOException ioe){
+
+      }
+   }
+
+   public void sendRandomizeTurn(int _turnDirtyBit){
+      try{
+         for(ObjectOutputStream o: clients) {
+            o.writeUTF("WHOTURN");
+            o.writeInt(_turnDirtyBit);
+            o.flush();
+            System.out.println(_turnDirtyBit);
+         }
+      }catch (IOException ioe){
+
       }
    }
 }

@@ -50,10 +50,12 @@ public class GuiMain extends JFrame{
     private ObjectOutputStream oout;
     private Socket socket;
 
+    private ChatClient chatClient;
+
     public static void main(String []args){
-     
-       new GuiMain();
-        
+
+        new GuiMain();
+
     }
     private BattleshipLogic logicClass = new BattleshipLogic();
     /*
@@ -85,14 +87,18 @@ public class GuiMain extends JFrame{
             }
             IP_ADDR = (String) JOptionPane.showInputDialog(pane, "Enter the IP Address of the server", JOptionPane.QUESTION_MESSAGE );
 
+            String player = (String) JOptionPane.showInputDialog(pane, "Are you a player, Enter either 'true' or 'false'", JOptionPane.QUESTION_MESSAGE);
+            chatClient = new ChatClient(IP_ADDR);
+            chatClient.isPlayer(player);
             buildGameBoard();
-            randomizeTurn();
+            //randomizeTurn();
         }
         catch(Exception nameError)
         {
             System.exit(0);
         }
     }
+
     /*
         *BuildGameBoard constructs the GUI but relies on the createPanels method to build the two grids that hold the fleets.
      */
@@ -125,7 +131,7 @@ public class GuiMain extends JFrame{
         JLabel greenLabel = new JLabel();
         JLabel orangeLabel = new JLabel();
         turnLabel = new JLabel("");
-        ChatClient chatClient = new ChatClient(IP_ADDR);
+
 
         createPanels();
 
@@ -211,12 +217,7 @@ public class GuiMain extends JFrame{
     /*
         *randomizeTurn randomizes the players turn and sets this equal to turnDirtyBit
      */
-    private void randomizeTurn()
-    {
-        double rand = Math.random();
-        turnDirtyBit = (1+(int)(rand * 2));
-        checkTurn(); //calls method to check the turn bit
-    }
+
     /*
         *checkTurn sets the JLabels to determine what players turn it is.
      */
@@ -375,35 +376,37 @@ public class GuiMain extends JFrame{
                 * If there is a 2, the icon will be changed to be a hit marker. That position in the logic array will also become a 3.
                 * If there is a 3, there is a hit ship.
                  */
-                    changeTurn();
-                    JButton btn = (JButton) eventTop.getSource();
-                    int arrRow = (int)(btn.getClientProperty("row"));
-                    int arrCol = (int)(btn.getClientProperty("column"));
-                    int arrPos[][] = logicClass.getLogicTopBoard();
-                    if(arrPos[arrRow][arrCol]== 0){
-                        getThatButton(eventTop);
-                    }
-                    else if(arrPos[arrRow][arrCol]== 1){
-                        System.out.println("Got a One");
-                    }
-                    else if(arrPos[arrRow][arrCol]== 2){
-                        if(eventTop.getSource()instanceof JButton){
-                            try {
-                                Image img = ImageIO.read(getClass().getResource("resources/hit.jpg"));
-                                ((JButton)eventTop.getSource()).setIcon(new ImageIcon(img));
-                                arrPos[arrRow][arrCol] = 3;
-                                logicClass.setLogicTopBoard(arrPos);
-                            } catch (Exception ex) {
-                                System.out.println("Failed to create an icon");
-                            }
-                        }
-                        else{
-                            System.out.println("Not Exit");
+                changeTurn();
+
+                JButton btn = (JButton) eventTop.getSource();
+                int arrRow = (int)(btn.getClientProperty("row"));
+                int arrCol = (int)(btn.getClientProperty("column"));
+                int arrPos[][] = logicClass.getLogicTopBoard();
+                chatClient.sendFireLocation(arrRow,arrCol);
+                if(arrPos[arrRow][arrCol]== 0){
+                    getThatButton(eventTop);
+                }
+                else if(arrPos[arrRow][arrCol]== 1){
+                    System.out.println("Got a One");
+                }
+                else if(arrPos[arrRow][arrCol]== 2){
+                    if(eventTop.getSource()instanceof JButton){
+                        try {
+                            Image img = ImageIO.read(getClass().getResource("resources/hit.jpg"));
+                            ((JButton)eventTop.getSource()).setIcon(new ImageIcon(img));
+                            arrPos[arrRow][arrCol] = 3;
+                            logicClass.setLogicTopBoard(arrPos);
+                        } catch (Exception ex) {
+                            System.out.println("Failed to create an icon");
                         }
                     }
-                    else {
-                        System.out.println("3");
+                    else{
+                        System.out.println("Not Exit");
                     }
+                }
+                else {
+                    System.out.println("3");
+                }
             }
             else{
                 System.out.println("Not Exit");
@@ -420,10 +423,12 @@ public class GuiMain extends JFrame{
             }
             else if(eventBottom.getSource()instanceof JButton){
                 changeTurn();
+
                 JButton btn = (JButton) eventBottom.getSource();
                 int arrRow = (int)(btn.getClientProperty("row"));
                 int arrCol = (int)(btn.getClientProperty("column"));
                 int arrPos[][] = logicClass.getLogicBottomBoard();
+                chatClient.sendFireLocation(arrRow,arrCol);
                 if(arrPos[arrRow][arrCol]== 0){
                     getThatButton(eventBottom);
                 }
@@ -530,42 +535,81 @@ public class GuiMain extends JFrame{
             }
             jtfSendMessage.setText("");
         }
-        public void run(){
-            String command = "";
-            try {
-                while ((command = ois.readUTF())!=null ) {
-
-                    if(command == "CHAT") {
-                        String user = ois.readUTF();
-                        String msg = ois.readUTF();
-                        System.out.println(msg);
-                        jtaMessages.append(user + ": " + msg + " \n");
-                    }
-                    else if(command == "DATA"){
-                        String player = ois.readUTF();
-                        int row = ois.readInt();
-                        int column = ois.readInt();
-                    }
-                    else if(command == "RESULT"){
-                        String player = ois.readUTF();
-                        Boolean isHit = ois.readBoolean();
-                    }
-                    else if(command == "START"){
-                        int start = ois.readInt();
-                    }
-                    else if(command == "LOSER"){
-                        int loser = ois.readInt();
-                        if(loser == 1){
-
-                        }
-                        else{
-
-                        }
-                    }
-                }
-            }catch (IOException ioe) {
+        public void sendFireLocation(int _arrRow,int _arrCol){
+            try{
+                oout.writeUTF("DATA");
+                oout.writeInt(_arrRow);
+                oout.writeInt(_arrCol);
+                oout.flush();
+            }catch(IOException ioe){
 
             }
+        }
+        public void sendResult(int _isHit) {
+
+        }
+
+        public void isPlayer(String _isPlayer){
+            if(_isPlayer.equals("true")){
+                try{
+                    System.out.println("Hit isPlayer");
+                    oout.writeUTF("PLAYER");
+                    oout.writeUTF("true");
+                    oout.flush();
+                }catch (IOException ioe){
+
+                }
+            }else{
+                System.out.println("Player == false");
+            }
+        }
+
+        public void run(){
+            String mes = "";
+            int targetRow;
+            int targetCol;
+
+            try {
+                while(true){
+                    //read in the first line to determine what type of information is being sent in
+                    String command = ois.readUTF();
+                    System.out.println(command);
+
+                    //If a message is being sent from the chat
+                    if(command.equals("CHAT")){
+                        //                        String username = ois.readUTF();
+                        mes = ois.readUTF();
+                        System.out.println(mes);
+                        jtaMessages.append(mes + " \n");
+                    }
+                    else if(command.equals("SPECTATOR-CHAT")){
+
+                    }
+                    else if(command.equals("DATA")){
+                        targetRow = ois.readInt();
+                        targetCol = ois.readInt();
+                        System.out.println(targetRow + " " + targetCol);
+                    }
+                    else if(command.equals("RESULT")) {
+
+                    }
+                    else if(command.equals("DECLARE-WINNER")){
+
+                    }
+                    else if(command.equals("WHOTURN")){
+                        turnDirtyBit = ois.readInt();
+                        System.out.println(turnDirtyBit);
+                        checkTurn();
+                    }
+
+
+
+
+                }
+            }catch (IOException ioe){
+
+            }
+
         }
     }
 }
