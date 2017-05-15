@@ -184,12 +184,11 @@ public class Server extends JFrame implements ActionListener{
                //If a message is being sent from the chat
                if(command.equals("CHAT")){
                   //                        String username = ois.readUTF();
-                  String username = "user";
+                  String username = ois.readUTF();
+                  uName = username;
                   String message = ois.readUTF();
                   System.out.println(message);
-                  sendMessage(message);
-                  uName = username;
-
+                  sendMessage(username, message);
                }
                else if(command.equals("SPECTATOR-CHAT")){
                   String username = ois.readUTF();
@@ -274,12 +273,14 @@ public class Server extends JFrame implements ActionListener{
       }
    }
 
-   public void sendMessage(String msg){
+   public void sendMessage(String user, String msg){
       try{
          System.out.println("got to sendMessage method");
          for(ObjectOutputStream o: clients){
             o.writeUTF("CHAT");
-           o.flush();
+            o.flush();
+            o.writeUTF(user);
+            o.flush();
             o.writeUTF(msg);
             o.flush();
          }
