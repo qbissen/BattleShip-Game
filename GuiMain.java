@@ -593,10 +593,11 @@ public class GuiMain extends JFrame{
 
                     }
                     else if(command.equals("RESULT")) {
-
+                        String player = ois.readUTF();
+                        boolean isHit = ois.readBoolean();
                     }
                     else if(command.equals("DECLARE-WINNER")){
-
+                        String player = ois.readUTF();
                     }
                     else if(command.equals("WHOTURN")){
                         turnDirtyBit = ois.readInt();
