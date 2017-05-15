@@ -166,8 +166,6 @@ public class Server extends JFrame implements ActionListener{
 
          //doStartGame();
 
-         String clientMsg;
-         String shift = "";
          try {
             OutputStream out = sock.getOutputStream();
             InputStream in = sock.getInputStream();
@@ -182,7 +180,12 @@ public class Server extends JFrame implements ActionListener{
                System.out.println(command);
 
                //If a message is being sent from the chat
-               if(command.equals("CHAT")){
+               if(command.equals("PLAYER")){
+                  String player = ois.readUTF();
+                  sendPlayer(player);
+               }
+
+               else if(command.equals("CHAT")){
                   //                        String username = ois.readUTF();
                   String username = ois.readUTF();
                   uName = username;
@@ -332,6 +335,20 @@ public class Server extends JFrame implements ActionListener{
             o.writeUTF(s);
             o.flush();
             o.writeBoolean(b);
+            o.flush();
+         }
+      }
+      catch(IOException e){
+         e.printStackTrace();
+      }
+   }
+
+   public synchronized void sendPlayer(String player){
+      try{
+         for(ObjectOutputStream o: clients) {
+            o.writeUTF("PLAYER");
+            o.flush();
+            o.writeUTF(player);
             o.flush();
          }
       }
