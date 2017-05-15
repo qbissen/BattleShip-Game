@@ -525,6 +525,18 @@ public class GuiMain extends JFrame{
             }
         }
 
+        public void sendPlayer(String p){
+            try{
+                oout.writeUTF("PLAYER");
+                oout.flush();
+                oout.writeUTF(p);
+                oout.flush();
+            }
+            catch(IOException e){
+                e.printStackTrace();
+            }
+        }
+
         public void sendMessage(){
             try{
                 oout.writeUTF("CHAT");
