@@ -601,6 +601,10 @@ public class GuiMain extends JFrame{
                         System.out.println(turnDirtyBit);
                         checkTurn();
                     }
+                    else if (command.equals("START")){
+                        turnDirtyBit = ois.readInt();
+                        checkTurn();
+                    }
 
 
 
