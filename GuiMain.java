@@ -528,6 +528,7 @@ public class GuiMain extends JFrame{
         public void sendMessage(){
             try{
                 oout.writeUTF("CHAT");
+                oout.writeUTF(orangeName);
                 oout.writeUTF(jtfSendMessage.getText());
                 oout.flush();
             }catch(IOException ioe){
@@ -577,10 +578,10 @@ public class GuiMain extends JFrame{
 
                     //If a message is being sent from the chat
                     if(command.equals("CHAT")){
-                        //                        String username = ois.readUTF();
+                        String username = ois.readUTF();
                         mes = ois.readUTF();
                         System.out.println(mes);
-                        jtaMessages.append(mes + " \n");
+                        jtaMessages.append(username + ": " + mes + " \n");
                     }
                     else if(command.equals("SPECTATOR-CHAT")){
 
@@ -589,6 +590,7 @@ public class GuiMain extends JFrame{
                         targetRow = ois.readInt();
                         targetCol = ois.readInt();
                         System.out.println(targetRow + " " + targetCol);
+
                     }
                     else if(command.equals("RESULT")) {
 
@@ -605,9 +607,6 @@ public class GuiMain extends JFrame{
                         turnDirtyBit = ois.readInt();
                         checkTurn();
                     }
-
-
-
 
                 }
             }catch (IOException ioe){
