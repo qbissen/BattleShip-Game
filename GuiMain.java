@@ -577,7 +577,10 @@ public class GuiMain extends JFrame{
                     System.out.println(command);
 
                     //If a message is being sent from the chat
-                    if(command.equals("CHAT")){
+                    if(command.equals("PLAYER")){
+                        String player = ois.readUTF();
+                    }
+                    else if(command.equals("CHAT")){
                         String username = ois.readUTF();
                         mes = ois.readUTF();
                         System.out.println(mes);
