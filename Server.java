@@ -42,41 +42,41 @@ public class Server extends JFrame implements ActionListener{
    }
 
    private Server(){
-   
+
       jpConnectionInfo.add(jlIP);
       jpConnectionInfo.add(jlPort);
       add(jpConnectionInfo, BorderLayout.NORTH);
-   
-   
+
+
       jta.setBorder(BorderFactory.createCompoundBorder(border,
-             BorderFactory.createEmptyBorder(10, 10, 10, 10)));
+              BorderFactory.createEmptyBorder(10, 10, 10, 10)));
       jta.setEnabled(false);
-   
+
       jpTextArea.add(jsp);
-   
+
       add(jpTextArea, BorderLayout.CENTER);
-   
+
       jpButton.add(jbStart);
       add(jpButton,BorderLayout.SOUTH);
-   
+
       jbStart.addActionListener(this);
-   
+
       setLocationRelativeTo(null);
       setSize(500,500);
       setVisible(true);
       setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
-   
+
    }
 
    public void actionPerformed(ActionEvent e){
       if(e.getSource().equals(jbStart)){
-      
-         Runnable r = 
-            new Runnable () {
-               public void run() {
-                  doStart();
-               }
-            };
+
+         Runnable r =
+                 new Runnable () {
+                    public void run() {
+                       doStart();
+                    }
+                 };
          new Thread(r).start();
       }
    }
@@ -92,18 +92,22 @@ public class Server extends JFrame implements ActionListener{
 
 
    public void doStart(){
-   
+
       jbStart.setEnabled(false);
-   
+
       ServerSocket ss;
-   
+
       try{
          InetAddress address = InetAddress.getLocalHost();
          String hostIP = address.getHostAddress();
-      
+
          jlIP.setText("IP Address: " + hostIP);
-      
+
          ss = new ServerSocket(16789);
+
+         DirtyBitListener db = new DirtyBitListener();
+         db.start();
+
          while(true){
             Socket s = ss.accept();
             jta.append("Connection from " + s.getInetAddress() + "\n");
@@ -112,17 +116,11 @@ public class Server extends JFrame implements ActionListener{
             ServerThread st = new ServerThread(s);
             st.setName(String.valueOf(s.getInetAddress()));
             st.start();
-            if(numberOfPlayers == 1){
-               sendDirtBitPlayerOne(1);
-            }
-            else if(numberOfPlayers == 2){
-               sendDirtyBitPlayerTwo(2);
-            }
-            else {
-               System.out.println("More than two players?????");
-            }
+
+
+
          }
-      
+
       }
       catch(SocketException e){
          e.printStackTrace();
@@ -133,24 +131,37 @@ public class Server extends JFrame implements ActionListener{
 
    }
 
+   class DirtyBitListener extends Thread{
+      public void run(){
 
+            System.out.println("Hit DirtyBit Listener");
+            if (numberOfPlayers == 1) {
+               sendDirtBitPlayerOne(1);
+            } else if (numberOfPlayers == 2) {
+               sendDirtyBitPlayerTwo(2);
+            } else {
+               System.out.println("More than two players?????");
+            }
+
+      }
+   }
 
    class ServerThread extends Thread{
       Socket sock;
       //        BufferedReader br;
       ObjectOutputStream obs;
       ObjectInputStream ois;
-   
-   //        private InetAddress address = sock.getInetAddress();
-   //        private String netAdress = address.getHostAddress();
-   
+
+      //        private InetAddress address = sock.getInetAddress();
+      //        private String netAdress = address.getHostAddress();
+
       String uName;
-   
+
       public ServerThread(Socket _s){
          this.sock = _s;
-      
+
       }
-   
+
       public void run(){
 
          //doStartGame();
@@ -160,25 +171,25 @@ public class Server extends JFrame implements ActionListener{
          try {
             OutputStream out = sock.getOutputStream();
             InputStream in = sock.getInputStream();
-            
+
             obs = new ObjectOutputStream(out);
             ois = new ObjectInputStream(in);
             String com = "";
-            clients.add(obs);   
+            clients.add(obs);
             while(true){
-                        //read in the first line to determine what type of information is being sent in
+               //read in the first line to determine what type of information is being sent in
                String command = ois.readUTF();
                System.out.println(command);
-                     
-                        //If a message is being sent from the chat
+
+               //If a message is being sent from the chat
                if(command.equals("CHAT")){
-                        //                        String username = ois.readUTF();
+                  //                        String username = ois.readUTF();
                   String username = "user";
                   String message = ois.readUTF();
                   System.out.println(message);
                   sendMessage(message);
                   uName = username;
-                  
+
                }
                else if(command.equals("SPECTATOR-CHAT")){
                   String username = ois.readUTF();
@@ -204,7 +215,7 @@ public class Server extends JFrame implements ActionListener{
                   String player = ois.readUTF();
                   declareWinner(player);
                }
-            
+
                else if(command.equals("PLAYER")){
 
                   String isPlayer = ois.readUTF();
@@ -219,8 +230,8 @@ public class Server extends JFrame implements ActionListener{
                      }
                   }
                }
-            
-            
+
+
             }
          }
          catch(SocketException e){
@@ -233,7 +244,7 @@ public class Server extends JFrame implements ActionListener{
             catch(IOException ioe){
                ioe.printStackTrace();
             }
-            
+
          }
          catch(IOException e){
             e.printStackTrace();
@@ -250,7 +261,7 @@ public class Server extends JFrame implements ActionListener{
          e.printStackTrace();
       }
    }
-   
+
    public synchronized void doStartGame(){
       try{
          for(ObjectOutputStream o: clients){
@@ -262,13 +273,13 @@ public class Server extends JFrame implements ActionListener{
          e.printStackTrace();
       }
    }
-   
+
    public void sendMessage(String msg){
       try{
          System.out.println("got to sendMessage method");
          for(ObjectOutputStream o: clients){
             o.writeUTF("CHAT");
-            o.flush();
+           o.flush();
             o.writeUTF(msg);
             o.flush();
          }
@@ -277,11 +288,11 @@ public class Server extends JFrame implements ActionListener{
          e.printStackTrace();
       }
    }
-   
+
    public synchronized void sendSpectatorMessage(String msg, String username){
       try{
          for(ObjectOutputStream o: clients){
-            
+
             o.writeUTF("SPECTATOR-MESSAGE");
             o.flush();
             o.writeUTF(username);
@@ -294,7 +305,7 @@ public class Server extends JFrame implements ActionListener{
          e.printStackTrace();
       }
    }
-   
+
    public synchronized void sendButtonNumber(int row, int column, String s){
       try{
          for(ObjectOutputStream o: clients) {
@@ -311,7 +322,7 @@ public class Server extends JFrame implements ActionListener{
          e.printStackTrace();
       }
    }
-   
+
    public synchronized void sendResult(Boolean b, String s){
       try{
          for(ObjectOutputStream o: clients) {
