@@ -525,9 +525,22 @@ public class GuiMain extends JFrame{
             }
         }
 
+        public void sendPlayer(String p){
+            try{
+                oout.writeUTF("PLAYER");
+                oout.flush();
+                oout.writeUTF(p);
+                oout.flush();
+            }
+            catch(IOException e){
+                e.printStackTrace();
+            }
+        }
+
         public void sendMessage(){
             try{
                 oout.writeUTF("CHAT");
+                oout.writeUTF(orangeName);
                 oout.writeUTF(jtfSendMessage.getText());
                 oout.flush();
             }catch(IOException ioe){
@@ -576,11 +589,14 @@ public class GuiMain extends JFrame{
                     System.out.println(command);
 
                     //If a message is being sent from the chat
-                    if(command.equals("CHAT")){
-                        //                        String username = ois.readUTF();
+                    if(command.equals("PLAYER")){
+                        String player = ois.readUTF();
+                    }
+                    else if(command.equals("CHAT")){
+                        String username = ois.readUTF();
                         mes = ois.readUTF();
                         System.out.println(mes);
-                        jtaMessages.append(mes + " \n");
+                        jtaMessages.append(username + ": " + mes + " \n");
                     }
                     else if(command.equals("SPECTATOR-CHAT")){
 
@@ -589,21 +605,24 @@ public class GuiMain extends JFrame{
                         targetRow = ois.readInt();
                         targetCol = ois.readInt();
                         System.out.println(targetRow + " " + targetCol);
+
                     }
                     else if(command.equals("RESULT")) {
-
+                        String player = ois.readUTF();
+                        boolean isHit = ois.readBoolean();
                     }
                     else if(command.equals("DECLARE-WINNER")){
-
+                        String player = ois.readUTF();
                     }
                     else if(command.equals("WHOTURN")){
                         turnDirtyBit = ois.readInt();
                         System.out.println(turnDirtyBit);
                         checkTurn();
                     }
-
-
-
+                    else if (command.equals("START")){
+                        turnDirtyBit = ois.readInt();
+                        checkTurn();
+                    }
 
                 }
             }catch (IOException ioe){
