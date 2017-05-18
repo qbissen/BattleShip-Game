@@ -170,14 +170,11 @@ public class Server extends JFrame implements ActionListener{
       }
    }
 
+   // The Server Thread
    class ServerThread extends Thread{
       Socket sock;
-      //        BufferedReader br;
       ObjectOutputStream obs;
       ObjectInputStream ois;
-   
-      //        private InetAddress address = sock.getInetAddress();
-      //        private String netAdress = address.getHostAddress();
    
       String uName;
    
