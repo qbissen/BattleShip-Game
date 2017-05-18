@@ -214,7 +214,6 @@ public class Server extends JFrame implements ActionListener{
                
                //If a message is being sent from the chat
                if(command.equals("CHAT")){
-                  //                        String username = ois.readUTF();
                   String username = "user";
                   String message = ois.readUTF();
                   System.out.println(message);
@@ -228,6 +227,7 @@ public class Server extends JFrame implements ActionListener{
                   sendSpectatorMessage(message, username);
                   uName = username;
                }
+               //If the button data is being sent
                else if(command.equals("DATA")){
                   //String player = ois.readUTF();
                   String player = "";
@@ -237,16 +237,18 @@ public class Server extends JFrame implements ActionListener{
                   System.out.println(column);
                   sendButtonNumber(row, column, player);
                }
+               //if the result is being sent
                else if(command.equals("RESULT")){
                   String player = ois.readUTF();
                   boolean isHit = ois.readBoolean();
                   sendResult(isHit, player);
                }
+               //if the winner is being sent
                else if(command.equals("DECLARE-WINNER")){
                   String player = ois.readUTF();
                   declareWinner(player);
                }
-               
+               //if the player is being sent
                else if(command.equals("PLAYER")){
                
                   String isPlayer = ois.readUTF();
@@ -285,6 +287,7 @@ public class Server extends JFrame implements ActionListener{
          }
          catch(SocketException e){
             try {
+               //close the connection
                obs.close();
                ois.close();
                sock.close();
@@ -299,6 +302,7 @@ public class Server extends JFrame implements ActionListener{
             e.printStackTrace();
          }
       }}
+   //send the player who won
    public synchronized void declareWinner(String player){
       try{
          for(ObjectOutputStream o: clients){
@@ -322,7 +326,7 @@ public class Server extends JFrame implements ActionListener{
          e.printStackTrace();
       }
    }
-
+   //send the message to the clients
    public void sendMessage(String msg){
       try{
          System.out.println("got to sendMessage method");
@@ -354,7 +358,7 @@ public class Server extends JFrame implements ActionListener{
          e.printStackTrace();
       }
    }
-
+   //send the button data to the clients
    public synchronized void sendButtonNumber(int row, int column, String s){
       try{
          for(ObjectOutputStream o: clients) {
@@ -372,6 +376,7 @@ public class Server extends JFrame implements ActionListener{
       }
    }
 
+   //send the result to the clients
    public synchronized void sendResult(Boolean b, String s){
       try{
          for(ObjectOutputStream o: clients) {
@@ -437,6 +442,8 @@ public class Server extends JFrame implements ActionListener{
       }
       catch(IOException ioe){}
    }
+
+   //tell both clients that there are two clients connected and the game is ready to start
    public void weAreReady(){
       try{
          for(ObjectOutputStream o: clients) {
