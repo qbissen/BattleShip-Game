@@ -1,5 +1,3 @@
-import com.sun.xml.internal.bind.v2.TODO;
-
 import javax.imageio.ImageIO;
 import javax.swing.*;
 import java.awt.event.*;
@@ -38,9 +36,11 @@ public class GuiMain extends JFrame{
    private JLabel turnLabel;
    private ImageIcon smallGreen = new ImageIcon("resources/green.JPG"); //img used for player name joptionpane
    private ImageIcon smallOrange = new ImageIcon("resources/orange.jpg"); //img used for player name joptionpane
-   private int whoTurn;
-
-
+   private int turnDirtyBit;
+   private static String IP_ADDR;
+   private JButton button;
+   private JButton button1;
+   private JLabel greenLabel=null;
 
    //Chat client variables
    final int PORT = 16789;
@@ -74,7 +74,6 @@ public class GuiMain extends JFrame{
        *createNewGame gathers user input for their name, then sets the board. It also calls the method to see what player's turn it is.
     */
    private void createNewGame(){
-       String IP_ADDR;
       try{
          JOptionPane.showMessageDialog(null,"This game consists of two players, one being green and the other being orange.\n The goal of the game is to sink the enemy ships by firing at positions in the grid. \n " +
                 "The game will place each players fleet for them so that neither player will be able to view the\n" +
@@ -89,7 +88,7 @@ public class GuiMain extends JFrame{
             orangeName = (String) JOptionPane.showInputDialog(pane,"Enter a user name.","Orange Player's Name",JOptionPane.QUESTION_MESSAGE, smallOrange,null,null);
          }
          IP_ADDR = (String) JOptionPane.showInputDialog(pane, "Enter the IP Address of the server", JOptionPane.QUESTION_MESSAGE );
-
+      
          String player = (String) JOptionPane.showInputDialog(pane, "Are you a player, Enter either 'true' or 'false'", JOptionPane.QUESTION_MESSAGE);
          chatClient = new ChatClient(IP_ADDR);
          chatClient.isPlayer(player);
@@ -106,7 +105,6 @@ public class GuiMain extends JFrame{
        *BuildGameBoard constructs the GUI but relies on the createPanels method to build the two grids that hold the fleets.
     */
    private void buildGameBoard(){
-       JLabel greenLabel=null;
       JPanel backgroundBoard = new JPanel(new BorderLayout());
       JPanel optionsBoard = new JPanel(new FlowLayout(FlowLayout.RIGHT));
       JPanel shipMonitorBoard = new JPanel(new BorderLayout());
@@ -132,7 +130,7 @@ public class GuiMain extends JFrame{
       JButton exitButton = new JButton("Exit");
       JButton resetButton = new JButton("Reset Game");
    
-       greenLabel = new JLabel();
+      greenLabel = new JLabel();
       JLabel orangeLabel = new JLabel();
       turnLabel = new JLabel("");
    
@@ -175,7 +173,7 @@ public class GuiMain extends JFrame{
       enemyShipCheck.add(subCheck1);
       optionsBoard.add(exitButton);
       optionsBoard.add(resetButton);
-      greenLabel.setText(greenName+"'s Fleet");
+      //greenLabel.setText(greenName+"'s Fleet");
       orangeLabel.setText(orangeName+"'s Fleet");
       exitButton.addActionListener(listenerTop);
       resetButton.addActionListener(listenerTop);
@@ -185,8 +183,7 @@ public class GuiMain extends JFrame{
        * It will also set the icon images and add action listeners to the grids
     */
    private void createPanels(){
-       JButton button;
-       JButton button1;
+   
       for(int c = 0;c<rows;c++)
       {
          for(int g = 0;g<columns;g++) {
@@ -222,7 +219,7 @@ public class GuiMain extends JFrame{
       }
    }
    /*
-       *randomizeTurn randomizes the players turn and sets this equal to whoTurn
+       *randomizeTurn randomizes the players turn and sets this equal to turnDirtyBit
     */
 
    /*
@@ -230,15 +227,15 @@ public class GuiMain extends JFrame{
     */
    private void checkTurn()
    {
-      switch(whoTurn)
+      switch(turnDirtyBit)
       {
          case 1:
             turnLabel.setText(greenName +"'s turn");
-            System.out.println(whoTurn);
+            System.out.println(turnDirtyBit);
             break;
          case 2:
             turnLabel.setText(orangeName +"'s turn");
-            System.out.println(whoTurn);
+            System.out.println(turnDirtyBit);
             break;
       }
    }
@@ -247,10 +244,10 @@ public class GuiMain extends JFrame{
     */
    private void changeTurn()
    {
-      if(whoTurn == 1)
+      if(turnDirtyBit == 1)
       {
          turnLabel.setText(greenName+"'s Turn");
-         whoTurn = 2;
+         turnDirtyBit = 2;
          //bottomBoardArray[c][g].setEnabled();
          //topBoardArray[][].removeActionListener(listener);
          //button.setEnabled(false);
@@ -258,21 +255,21 @@ public class GuiMain extends JFrame{
          for(int i=0; i< 10; i++){
             for(int j=0; j<10; j++){
                topBoardArray[i][j].setEnabled(false);
-               bottomBoardArray[i][j].setEnabled(false);
+               bottomBoardArray[i][j].setEnabled(true);
             }
          }
       }
-      else if(whoTurn == 2)
+      else if(turnDirtyBit == 2)
       {
          turnLabel.setText(orangeName+"'s Turn");
-         whoTurn = 1;
+         turnDirtyBit = 1;
          //bottomBoardArray[][].addActionListener(listener);
          //topBoardArray[][].removeActionListener(listener);
          System.out.println("Changed turn");
          for(int i=0; i< 10; i++){
             for(int j=0; j<10; j++){
-               bottomBoardArray[i][j].setEnabled(true);
-               topBoardArray[i][j].setEnabled(false);
+               bottomBoardArray[i][j].setEnabled(false);
+               topBoardArray[i][j].setEnabled(true);
             }
          }
       }
@@ -352,10 +349,10 @@ public class GuiMain extends JFrame{
             if(friendlyFleetArray[i][j]==2){
                try {
                   Image img = ImageIO.read(getClass().getResource("resources/ship.png"));
-                  bottomBoardArray[i][j].setIcon(new ImageIcon(img));
+                  topBoardArray[i][j].setIcon(new ImageIcon(img));
                } 
                catch (Exception ex) {
-                  System.out.println("Failed to create an icon in showFriendlyFleet method");
+                  System.out.println("Failed to create an icon");
                }
             }
          }
@@ -387,6 +384,7 @@ public class GuiMain extends JFrame{
             * If there is a 3, there is a hit ship.
             */
                changeTurn();
+            
                JButton btn = (JButton) eventTop.getSource();
                int arrRow = (int)(btn.getClientProperty("row"));
                int arrCol = (int)(btn.getClientProperty("column"));
@@ -528,7 +526,7 @@ public class GuiMain extends JFrame{
       public void createStreams(){
          try {
             // open input stream
-           oout = new ObjectOutputStream(socket.getOutputStream());
+            oout = new ObjectOutputStream(socket.getOutputStream());
             ois = new ObjectInputStream(socket.getInputStream());
          
             // open output stream
@@ -543,7 +541,7 @@ public class GuiMain extends JFrame{
       public void sendMessage(){
          try{
             oout.writeUTF("CHAT");
-            oout.writeUTF(jtfSendMessage.getText());
+            oout.writeUTF(orangeName+": "+jtfSendMessage.getText());
             oout.flush();
          }
          catch(IOException ioe){
@@ -587,8 +585,7 @@ public class GuiMain extends JFrame{
          String mes = "";
          int targetRow;
          int targetCol;
-         int fireSpot[][] = new int[10][10];
-
+      
          try {
             while(true){
                //read in the first line to determine what type of information is being sent in
@@ -609,10 +606,6 @@ public class GuiMain extends JFrame{
                   targetRow = ois.readInt();
                   targetCol = ois.readInt();
                   System.out.println(targetRow + " " + targetCol);
-                  //This may produce a null value ~~~~Check here if you are getting errors reguarding the reading in of fire locations.
-                   fireSpot[targetRow][targetCol] = 3;
-                  logicClass.setLogicBottomBoard(fireSpot);
-                   System.out.println(fireSpot[targetRow][targetCol] + " array location for incoming fire.");
                }
                else if(command.equals("RESULT")) {
                
@@ -621,12 +614,12 @@ public class GuiMain extends JFrame{
                
                }
                else if(command.equals("WHOTURN")){
-                  whoTurn = ois.readInt();
-                  System.out.println(whoTurn);
+                  turnDirtyBit = ois.readInt();
+                  System.out.println(turnDirtyBit);
                   checkTurn();
                }
                else if(command.equals("YOUARE")){
-                   im = ois.readInt();
+                  im = ois.readInt();
                   
                   System.out.println("im player " + im);
                   
@@ -638,7 +631,10 @@ public class GuiMain extends JFrame{
                   
                }
                else if(command.equals("ENAME")){
-                  System.out.println(ois.readUTF());
+                 String eName = ois.readUTF();
+                  greenLabel.setText(eName+"'s Fleet");
+               
+                  System.out.println(eName);
                }
             
             
