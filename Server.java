@@ -35,32 +35,43 @@ public class Server extends JFrame implements ActionListener{
    //ArrayList of Clients
    private Vector<ObjectOutputStream> clients = new Vector<ObjectOutputStream>();
 
+   // number of players connected
    private int numberOfPlayers = 0;
 
+   // main method which creates a new instance of Server
    public static void main(String[] args){
       new Server();
    }
 
    private Server(){
-   
+
+      // add the JLabels to JPConnectionInfo
       jpConnectionInfo.add(jlIP);
       jpConnectionInfo.add(jlPort);
+
+      //add the JPanel jpConnectionInfo
       add(jpConnectionInfo, BorderLayout.NORTH);
    
-   
+      //Set a border around the jtextarea
       jta.setBorder(BorderFactory.createCompoundBorder(border,
               BorderFactory.createEmptyBorder(10, 10, 10, 10)));
+      //disable the jtextarea
       jta.setEnabled(false);
-   
+
+      //add a JScrollPane
       jpTextArea.add(jsp);
-   
+
+      //add the scrollpane to the jpTextArea JPanel located in the center of the GUI
       add(jpTextArea, BorderLayout.CENTER);
-   
+
+      //add the start button to the GUI
       jpButton.add(jbStart);
       add(jpButton,BorderLayout.SOUTH);
-   
+
+      //add an action listener to jbStart
       jbStart.addActionListener(this);
-   
+
+      //setup the JFrame
       setLocationRelativeTo(null);
       setSize(500,500);
       setVisible(true);
@@ -68,10 +79,13 @@ public class Server extends JFrame implements ActionListener{
    
    }
 
+   //ActionListener for jbStart
    public void actionPerformed(ActionEvent e){
       if(e.getSource().equals(jbStart)){
+         //add text to the JTextArea saying the server started
          jta.append("Server Start\n");
-      
+
+         //Create a runnable to start the Server and run it.
          Runnable r =
                  new Runnable () {
                     public void run() {
@@ -93,15 +107,19 @@ public class Server extends JFrame implements ActionListener{
 
 
    public void doStart(){
-      
+
+      //disables the jbStart JButton
       jbStart.setEnabled(false);
       
       ServerSocket ss;
-   
+
+
       try{
+         //Gets the IP of the machine the Server is being run on
          InetAddress address = InetAddress.getLocalHost();
          String hostIP = address.getHostAddress();
-      
+
+         //displays the IP in the Server GUI
          jlIP.setText("IP Address: " + hostIP);
       
       
@@ -109,14 +127,13 @@ public class Server extends JFrame implements ActionListener{
       
          DirtyBitListener db = new DirtyBitListener();
          db.start();
-      
+
+         //Listens for a connection
          while(true){
             Socket s = ss.accept();
             jta.append("Connection from " + s.getInetAddress() + "\n");
             
-            
-            
-         
+            // Creates a new ServerThread for each connection
             ServerThread st = new ServerThread(s);
             st.setName(String.valueOf(s.getInetAddress()));
             st.start();
@@ -177,12 +194,17 @@ public class Server extends JFrame implements ActionListener{
          String shift = "";
          String eName = null;
          try {
+            //OutputStream
             OutputStream out = sock.getOutputStream();
+            //InpuStream
             InputStream in = sock.getInputStream();
-         
+
+            //ObjectOutputStream
             obs = new ObjectOutputStream(out);
+            //ObejctInputStream
             ois = new ObjectInputStream(in);
             String com = "";
+            // adds the ObjectOutpuStream to a vector of clients
             clients.add(obs);
             while(true){
                //read in the first line to determine what type of information is being sent in
