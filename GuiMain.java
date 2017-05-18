@@ -130,7 +130,7 @@ public class GuiMain extends JFrame{
       JButton exitButton = new JButton("Exit");
       JButton resetButton = new JButton("Reset Game");
    
-       greenLabel = new JLabel();
+      greenLabel = new JLabel();
       JLabel orangeLabel = new JLabel();
       turnLabel = new JLabel("");
    
@@ -173,7 +173,7 @@ public class GuiMain extends JFrame{
       enemyShipCheck.add(subCheck1);
       optionsBoard.add(exitButton);
       optionsBoard.add(resetButton);
-      greenLabel.setText(greenName+"'s Fleet");
+      //greenLabel.setText(greenName+"'s Fleet");
       orangeLabel.setText(orangeName+"'s Fleet");
       exitButton.addActionListener(listenerTop);
       resetButton.addActionListener(listenerTop);
@@ -526,7 +526,7 @@ public class GuiMain extends JFrame{
       public void createStreams(){
          try {
             // open input stream
-           oout = new ObjectOutputStream(socket.getOutputStream());
+            oout = new ObjectOutputStream(socket.getOutputStream());
             ois = new ObjectInputStream(socket.getInputStream());
          
             // open output stream
@@ -619,7 +619,7 @@ public class GuiMain extends JFrame{
                   checkTurn();
                }
                else if(command.equals("YOUARE")){
-                   im = ois.readInt();
+                  im = ois.readInt();
                   
                   System.out.println("im player " + im);
                   
@@ -631,7 +631,10 @@ public class GuiMain extends JFrame{
                   
                }
                else if(command.equals("ENAME")){
-                  System.out.println(ois.readUTF());
+                 String eName = ois.readUTF();
+                  greenLabel.setText(eName+"'s Fleet");
+               
+                  System.out.println(eName);
                }
             
             

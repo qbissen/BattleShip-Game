@@ -228,29 +228,30 @@ public class Server extends JFrame implements ActionListener{
                   System.out.println(isPlayer);
                   if(isPlayer.equals("true")){
                      System.out.println("just before numberOfPlayers");
+                     
                      numberOfPlayers = numberOfPlayers + 1;
                      whoAreYou(numberOfPlayers);
+                     
                      System.out.println(numberOfPlayers);
                      if(numberOfPlayers == 2){
                         System.out.println("got inside of numberOfPlayers for loop");
                         randomizeTurn();
+                        whoAreYou(numberOfPlayers);
+                     
                         weAreReady();
                      }
                   }
                }
                else if(command.equals("IMP1")){
                   String eName = ois.readUTF();
-                  clients.get(1).writeUTF("ENAME");
-                  
-                  clients.get(1).writeUTF(eName);
-                  clients.get(1).flush();
+               
+                  sendEname(1, eName);
                }
                else if(command.equals("IMP2")){
                   String eName = ois.readUTF();
-                  clients.get(0).writeUTF("ENAME");
-                  
-                  clients.get(0).writeUTF(eName);
-                  clients.get(0).flush();
+               
+                  sendEname(0, eName);
+               
                }
                
             
@@ -421,5 +422,14 @@ public class Server extends JFrame implements ActionListener{
       catch (IOException ioe){
       
       }
+   }
+   public void sendEname(int who, String eName){
+      try{
+         clients.get(who).writeUTF("ENAME");
+                  
+         clients.get(who).writeUTF(eName);
+         clients.get(who).flush();
+      }
+      catch(IOException ioe){}
    }
 }
