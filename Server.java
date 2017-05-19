@@ -37,6 +37,8 @@ public class Server extends JFrame implements ActionListener{
 
    // number of players connected
    private int numberOfPlayers = 0;
+    private static int[] shipLengths = {2, 3, 3, 4};
+   private int im;
 
    // main method which creates a new instance of Server
    public static void main(String[] args){
@@ -51,7 +53,7 @@ public class Server extends JFrame implements ActionListener{
 
       //add the JPanel jpConnectionInfo
       add(jpConnectionInfo, BorderLayout.NORTH);
-   
+
       //Set a border around the jtextarea
       jta.setBorder(BorderFactory.createCompoundBorder(border,
               BorderFactory.createEmptyBorder(10, 10, 10, 10)));
@@ -76,7 +78,7 @@ public class Server extends JFrame implements ActionListener{
       setSize(500,500);
       setVisible(true);
       setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
-   
+
    }
 
    //ActionListener for jbStart
@@ -104,13 +106,67 @@ public class Server extends JFrame implements ActionListener{
       sendRandomizeTurn(turnDirtyBit);
    }
 
-
+    public int[][] findFleetStart() {
+        int[][] logicBoard = new int [10][10];
+        for (int ship : shipLengths) {
+            boolean placed = false;
+            while (!placed) {
+                int row = (int) (logicBoard.length * Math.random());
+                int col = (int) (logicBoard[0].length * Math.random());
+                boolean horizontal = ((int) (10 * Math.random())) % 2 == 0;
+                if (horizontal) {
+                    // Check for vertical space
+                    boolean hasSpace = true;
+                    for (int i = 0; i < ship; i++){
+                        if (col + i >= logicBoard[0].length){
+                            hasSpace = false;
+                            break;
+                        }
+                        if (logicBoard[row][col + i] != 0) {
+                            hasSpace = false;
+                            break;
+                        }
+                    }
+                    if (!hasSpace) {
+                        // Not enough room, find a new spo
+                        continue;
+                    }
+                    for (int i = 0; i < ship; i++){
+                        logicBoard[row][col + i] = 2;
+                    }
+                    placed = true;
+                } else {
+                    // Check for horizontal space
+                    boolean enoughRoom = true;
+                    for (int i = 0; i < ship; i++){
+                        if (row + i >= logicBoard.length){
+                            enoughRoom = false;
+                            break;
+                        }
+                        if (logicBoard[row + i][col] != 0){
+                            enoughRoom = false;
+                            break;
+                        }
+                    }
+                    if (!enoughRoom) {
+                        // Not enough room, find a new spot
+                        continue;
+                    }
+                    for (int i = 0; i < ship; i++){
+                        logicBoard[row + i][col] = 2;
+                    }
+                    placed = true;
+                }
+            }
+        }
+        return logicBoard;
+    }
 
    public void doStart(){
 
       //disables the jbStart JButton
       jbStart.setEnabled(false);
-      
+
       ServerSocket ss;
 
 
@@ -121,10 +177,10 @@ public class Server extends JFrame implements ActionListener{
 
          //displays the IP in the Server GUI
          jlIP.setText("IP Address: " + hostIP);
-      
-      
+
+
          ss = new ServerSocket(16789);
-      
+
          DirtyBitListener db = new DirtyBitListener();
          db.start();
 
@@ -132,15 +188,15 @@ public class Server extends JFrame implements ActionListener{
          while(true){
             Socket s = ss.accept();
             jta.append("Connection from " + s.getInetAddress() + "\n");
-            
+
             // Creates a new ServerThread for each connection
             ServerThread st = new ServerThread(s);
             st.setName(String.valueOf(s.getInetAddress()));
             st.start();
-          
-         
+
+
          }
-      
+
       }
       catch(SocketException e){
          e.printStackTrace();
@@ -148,25 +204,25 @@ public class Server extends JFrame implements ActionListener{
       catch(IOException e){
          e.printStackTrace();
       }
-   
+
    }
 
    class DirtyBitListener extends Thread{
       public void run(){
-      
+
          System.out.println("Hit DirtyBit Listener");
          if (numberOfPlayers == 1) {
             sendDirtBitPlayerOne(1);
             whoAreYou(1);
-         } 
+         }
          else if (numberOfPlayers == 2) {
             sendDirtyBitPlayerTwo(2);
             whoAreYou(2);
-         } 
+         }
          else {
             System.out.println("More than two players?????");
          }
-      
+
       }
    }
 
@@ -175,18 +231,18 @@ public class Server extends JFrame implements ActionListener{
       Socket sock;
       ObjectOutputStream obs;
       ObjectInputStream ois;
-   
+
       String uName;
-   
+
       public ServerThread(Socket _s){
          this.sock = _s;
-      
+
       }
-   
+
       public void run(){
-      
+
          //doStartGame();
-      
+
          String clientMsg;
          String shift = "";
          String eName = null;
@@ -207,8 +263,8 @@ public class Server extends JFrame implements ActionListener{
                //read in the first line to determine what type of information is being sent in
                String command = ois.readUTF();
                System.out.println(command);
-               
-               
+
+
                //If a message is being sent from the chat
                if(command.equals("CHAT")){
                   String username = "user";
@@ -216,7 +272,7 @@ public class Server extends JFrame implements ActionListener{
                   System.out.println(message);
                   sendMessage(message);
                   uName = username;
-               
+
                }
                else if(command.equals("SPECTATOR-CHAT")){
                   String username = ois.readUTF();
@@ -230,6 +286,8 @@ public class Server extends JFrame implements ActionListener{
                   String player = "";
                   int row = ois.readInt();
                   int column = ois.readInt();
+                  im = ois.readInt();
+                  System.out.println(im + "Server 'im' at data");
                   System.out.println(row);
                   System.out.println(column);
                   sendButtonNumber(row, column, player);
@@ -247,39 +305,45 @@ public class Server extends JFrame implements ActionListener{
                }
                //if the player is being sent
                else if(command.equals("PLAYER")){
-               
+
                   String isPlayer = ois.readUTF();
                   System.out.println(isPlayer);
                   if(isPlayer.equals("true")){
                      System.out.println("just before numberOfPlayers");
-                     
+
                      numberOfPlayers = numberOfPlayers + 1;
                      whoAreYou(numberOfPlayers);
-                     
+
                      System.out.println(numberOfPlayers);
                      if(numberOfPlayers == 2){
+                         sendFleet();
                         System.out.println("got inside of numberOfPlayers for loop");
                         randomizeTurn();
                         whoAreYou(numberOfPlayers);
-                     
                         weAreReady();
                      }
                   }
                }
                else if(command.equals("IMP1")){
-                    eName = ois.readUTF();
-               
+                  eName = ois.readUTF();
+
                   sendEname(1, eName);
                }
                else if(command.equals("IMP2")){
-                    eName = ois.readUTF();
-               
+                  eName = ois.readUTF();
+
                   sendEname(0, eName);
-               
                }
-               
-            
-            
+
+               //new add 5/18
+               else if(command.equals("TURNEND1")){
+                  nextTurn(1);
+               }
+               else if(command.equals("TURNEND2")){
+                  nextTurn(0);
+               }
+
+
             }
          }
          catch(SocketException e){
@@ -293,7 +357,7 @@ public class Server extends JFrame implements ActionListener{
             catch(IOException ioe){
                ioe.printStackTrace();
             }
-         
+
          }
          catch(IOException e){
             e.printStackTrace();
@@ -303,6 +367,7 @@ public class Server extends JFrame implements ActionListener{
    public synchronized void declareWinner(String player){
       try{
          for(ObjectOutputStream o: clients){
+            o.writeUTF("DECLARE-WINNER");
             o.writeUTF(player);
             o.flush();
          }
@@ -342,7 +407,7 @@ public class Server extends JFrame implements ActionListener{
    public synchronized void sendSpectatorMessage(String msg, String username){
       try{
          for(ObjectOutputStream o: clients){
-         
+
             o.writeUTF("SPECTATOR-MESSAGE");
             o.flush();
             o.writeUTF(username);
@@ -358,15 +423,24 @@ public class Server extends JFrame implements ActionListener{
    //send the button data to the clients
    public synchronized void sendButtonNumber(int row, int column, String s){
       try{
-         for(ObjectOutputStream o: clients) {
-            o.writeUTF("DATA");
-            //o.writeUTF(s);
-            //o.flush();
-            o.writeInt(row);
-            //o.flush();
-            o.writeInt(column);
-            o.flush();
-         }
+          if(im == 2) {
+              clients.get(0).writeUTF("DATA");
+              //o.writeUTF(s);
+              //o.flush();
+              clients.get(0).writeInt(row);
+              //o.flush();
+              clients.get(0).writeInt(column);
+              clients.get(0).flush();
+          }
+          else if(im == 1){
+              clients.get(1).writeUTF("DATA");
+              //o.writeUTF(s);
+              //o.flush();
+              clients.get(1).writeInt(row);
+              //o.flush();
+              clients.get(1).writeInt(column);
+              clients.get(1).flush();
+          }
       }
       catch(IOException e){
          e.printStackTrace();
@@ -399,7 +473,7 @@ public class Server extends JFrame implements ActionListener{
          }
       }
       catch (IOException ioe){
-      
+
       }
    }
 
@@ -412,10 +486,14 @@ public class Server extends JFrame implements ActionListener{
          }
       }
       catch (IOException ioe){
-      
+
       }
    }
 
+    /**
+     * Randomizes turn
+     * @param _turnDirtyBit - either a one or a two for who gets to go first
+     */
    public void sendRandomizeTurn(int _turnDirtyBit){
       try{
          for(ObjectOutputStream o: clients) {
@@ -426,14 +504,14 @@ public class Server extends JFrame implements ActionListener{
          }
       }
       catch (IOException ioe){
-      
+
       }
    }
-   
+
    public void whoAreYou(int numberOfPlayers){
       try{
          clients.get(numberOfPlayers -1).writeUTF("YOUARE");
-                  
+
          clients.get(numberOfPlayers -1).writeInt(numberOfPlayers);
          clients.get(numberOfPlayers -1).flush();
       }
@@ -447,18 +525,68 @@ public class Server extends JFrame implements ActionListener{
             o.writeUTF("READY");
             o.flush();
          }
+         // new add 5/18, take the youFirst() in here so we can determine who go first when 2 player where joined in
+         youFirst();
+
       }
       catch (IOException ioe){
-      
+
       }
    }
+   // new add  5/18
+   // determine who go first
+   // i try to make it random, but it just dont work on the 2nd player, so i hard code it or the 1st player
+   public void youFirst(){
+      double f = Math.random();
+      try{
+         clients.get(0).writeUTF("FIRST");
+         clients.get(0).flush();
+
+      }
+      catch (IOException ioe){
+
+      }
+   }
+
+    /**
+     * Sendst the name
+     * @param who - player number
+     * @param eName - player name
+     */
    public void sendEname(int who, String eName){
       try{
          clients.get(who).writeUTF("ENAME");
-                  
+
          clients.get(who).writeUTF(eName);
          clients.get(who).flush();
       }
       catch(IOException ioe){}
+   }
+
+    /**
+     * Handles the next players turn
+     * @param who - int what player
+     */
+   public void nextTurn(int who){
+      try{
+         clients.get(who).writeUTF("YOURTURN");
+         clients.get(who).flush();
+      }
+      catch(IOException ioe){}
+
+   }
+   public void sendFleet(){
+       try{
+           int [][] topArray = findFleetStart();
+           int [][] bottomArray = findFleetStart();
+           for(ObjectOutputStream o: clients) {
+               o.writeUTF("FLEET");
+               o.writeObject(bottomArray);
+               o.writeObject(topArray);
+               o.flush();
+           }
+       }catch(IOException ioe){
+
+       }
    }
 }
