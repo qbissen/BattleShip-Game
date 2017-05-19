@@ -7,20 +7,16 @@ import java.util.stream.IntStream;
  * This class deals with placing the ships on the board. It deals with most of the underlying logic in the game.
  */
 public class BattleshipLogic {
-    public int[][] logicTopBoard = new int[10][10];
-    public int[][] logicBottomBoard = new int[10][10];
-    private static int[] shipLengths = {2, 3, 3, 4};
+    public int[][] logicTopBoard;
+    public int[][] logicBottomBoard;
 
-    public BattleshipLogic() {
-    }
-    /*
-        *setFleetFormation calls the two methods that place the fleets
+    /**
+     * Default constructor
      */
-    public void setFleetFormation() {
+    public BattleshipLogic() {
 
-        findFleetStart(logicTopBoard);
-        findFleetStart(logicBottomBoard);
     }
+
 
     /*
         *The following methods get and set the logic board. This is used for fleet placement.
@@ -49,58 +45,5 @@ public class BattleshipLogic {
         * vertically or horizontally. After this it checks to see if the ship will go out of bounds, if this happens it will start the process over.
         * Once this is completed it will place the ship segments.
      */
-    public void findFleetStart(int[][] _logicBoard) {
-        int[][] logicBoard = _logicBoard;
-        for (int ship : shipLengths) {
-            boolean placed = false;
-            while (!placed) {
-                int row = (int) (logicBoard.length * Math.random());
-                int col = (int) (logicBoard[0].length * Math.random());
-                boolean horizontal = ((int) (10 * Math.random())) % 2 == 0;
-                if (horizontal) {
-                    // Check for vertical space
-                    boolean hasSpace = true;
-                    for (int i = 0; i < ship; i++){
-                        if (col + i >= logicBoard[0].length){
-                            hasSpace = false;
-                            break;
-                        }
-                        if (logicBoard[row][col + i] != 0) {
-                            hasSpace = false;
-                            break;
-                        }
-                    }
-                    if (!hasSpace) {
-                        // Not enough room, find a new spo
-                        continue;
-                    }
-                    for (int i = 0; i < ship; i++){
-                        logicBoard[row][col + i] = 2;
-                    }
-                    placed = true;
-                } else {
-                    // Check for horizontal space
-                    boolean enoughRoom = true;
-                    for (int i = 0; i < ship; i++){
-                        if (row + i >= logicBoard.length){
-                            enoughRoom = false;
-                            break;
-                        }
-                        if (logicBoard[row + i][col] != 0){
-                            enoughRoom = false;
-                            break;
-                        }
-                    }
-                    if (!enoughRoom) {
-                        // Not enough room, find a new spot
-                        continue;
-                    }
-                    for (int i = 0; i < ship; i++){
-                        logicBoard[row + i][col] = 2;
-                    }
-                    placed = true;
-                }
-            }
-        }
-    }
+
 }
